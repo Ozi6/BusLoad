@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            Vector3 worldPos = new Vector3(data.gridPosition.x, data.gridPosition.y, 0);
+            Vector3 worldPos = new Vector3(data.gridPosition.x, 0, data.gridPosition.y);
             passengerObj.transform.position = worldPos;
         }
     }

@@ -38,7 +38,7 @@ MonoBehaviour:
     gridPosition: {x: 2, y: 1}
     traitTypes: []
   - color: 0
-    gridPosition: {x: 2, y: 0}
+    gridPosition: {x: 2, y: 2}
     traitTypes: []
   buses:
   - color: 0
