@@ -10,6 +10,7 @@ public class Passenger : MonoBehaviour
 
     private void OnMouseDown()
     {
+        Debug.Log("passenger clicked");
         foreach (PassengerTrait trait in traits)
             trait.OnSelected(this);
 

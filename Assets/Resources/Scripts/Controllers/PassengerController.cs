@@ -46,12 +46,11 @@ public class PassengerController : MonoBehaviour
             if (passenger.CanBoardBus(currentBus))
             {
                 currentBus.AddPassenger(passenger);
-                if (currentBus.Passengers.Count >= 3) break;
+                if (currentBus.Passengers.Count >= 3)
+                    break;
             }
             else
-            {
                 tempQueue.Enqueue(passenger);
-            }
         }
 
         waitingQueue = tempQueue;
