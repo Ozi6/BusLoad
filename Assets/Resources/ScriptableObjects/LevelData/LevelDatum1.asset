@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16db6e1831fd0704c8d78a808dce9da6, type: 3}
+  m_Name: LevelDatum1
+  m_EditorClassIdentifier: 
+  passengers:
+  - color: 0
+    gridPosition: {x: 0, y: 0}
+    traitTypes: []
+  - color: 1
+    gridPosition: {x: 0, y: 1}
+    traitTypes: []
+  - color: 2
+    gridPosition: {x: 0, y: 2}
+    traitTypes: []
+  - color: 0
+    gridPosition: {x: 1, y: 0}
+    traitTypes: []
+  - color: 1
+    gridPosition: {x: 1, y: 1}
+    traitTypes: []
+  - color: 2
+    gridPosition: {x: 1, y: 2}
+    traitTypes: []
+  - color: 0
+    gridPosition: {x: 2, y: 0}
+    traitTypes: []
+  - color: 1
+    gridPosition: {x: 2, y: 1}
+    traitTypes: []
+  - color: 0
+    gridPosition: {x: 2, y: 0}
+    traitTypes: []
+  buses:
+  - color: 0
+    traitTypes: []
+  - color: 1
+    traitTypes: []
+  - color: 2
+    traitTypes: []
