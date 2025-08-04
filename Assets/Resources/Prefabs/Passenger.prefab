@@ -156,3 +156,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   traits: []
+  bodyRenderer: {fileID: 7680485374761971431}

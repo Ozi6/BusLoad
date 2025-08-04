@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
             GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
             Passenger passenger = passengerObj.GetComponent<Passenger>();
 
-            passenger.Color = data.color;
+            passenger.SetColor(data.color);
             passenger.GridPosition = data.gridPosition;
             gridPassengers[data.gridPosition] = passenger;
 
