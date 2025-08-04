@@ -154,3 +154,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   traits: []
+  bodyRenderer: {fileID: 7431930266084530498}
+  moveSpeed: 5

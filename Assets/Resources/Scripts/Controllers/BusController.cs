@@ -6,6 +6,9 @@ public class BusController : MonoBehaviour
     public static BusController Instance;
     public Bus CurrentBus { get; private set; }
     public LevelData levelData;
+    public Transform busSpawnPoint;
+    public Transform busDeparturePoint;
+    public GameObject busPrefab;
     private Queue<BusData> busQueue = new Queue<BusData>();
 
     private void Awake()
@@ -24,7 +27,7 @@ public class BusController : MonoBehaviour
     public void DepartBus()
     {
         if (CurrentBus != null)
-            Destroy(CurrentBus.gameObject);
+            CurrentBus.DepartToDestination(busDeparturePoint);
         SpawnNextBus();
         PassengerController.Instance.ProcessQueue();
     }
@@ -34,9 +37,9 @@ public class BusController : MonoBehaviour
         if (busQueue.Count == 0) return;
 
         BusData data = busQueue.Dequeue();
-        GameObject busObj = new GameObject("Bus");
-        CurrentBus = busObj.AddComponent<Bus>();
-        CurrentBus.Color = data.color;
+        GameObject busObj = Instantiate(busPrefab, busSpawnPoint.position, busSpawnPoint.rotation);
+        CurrentBus = busObj.GetComponent<Bus>();
+        CurrentBus.SetColor(data.color);
 
         foreach (string traitType in data.traitTypes)
         {
