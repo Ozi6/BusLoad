@@ -8,13 +8,25 @@ public class Passenger : MonoBehaviour
     public List<PassengerTrait> traits = new List<PassengerTrait>();
     public Renderer bodyRenderer;
 
-    private void OnMouseDown()
+    void Update()
     {
-        Debug.Log("passenger clicked");
-        foreach (PassengerTrait trait in traits)
-            trait.OnSelected(this);
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        PassengerController.Instance.SelectPassenger(this);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Passenger passenger = hit.collider.GetComponentInParent<Passenger>();
+                if (passenger == this)
+                {
+                    Debug.Log("Passenger clicked via raycast");
+                    foreach (PassengerTrait trait in passenger.traits)
+                        trait.OnSelected(passenger);
+
+                    PassengerController.Instance.SelectPassenger(passenger);
+                }
+            }
+        }
     }
 
     public bool CanBoardBus(Bus bus)
