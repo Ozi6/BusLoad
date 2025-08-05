@@ -7,6 +7,7 @@ public class BusController : MonoBehaviour
     public Bus CurrentBus { get; private set; }
     public LevelData levelData;
     public Transform busSpawnPoint;
+    public Transform busBoardingPoint;
     public Transform busDeparturePoint;
     public GameObject busPrefab;
     private Queue<BusData> busQueue = new Queue<BusData>();
@@ -27,14 +28,19 @@ public class BusController : MonoBehaviour
     public void DepartBus()
     {
         if (CurrentBus != null)
-            CurrentBus.DepartToDestination(busDeparturePoint);
-        SpawnNextBus();
-        PassengerController.Instance.ProcessQueue();
+        {
+            MovementManager.Instance.MoveGradual(CurrentBus.gameObject, busDeparturePoint, CurrentBus.moveSpeed, () =>
+            {
+                Destroy(CurrentBus.gameObject);
+                SpawnNextBus();
+            });
+        }
     }
 
     private void SpawnNextBus()
     {
-        if (busQueue.Count == 0) return;
+        if (busQueue.Count == 0)
+            return;
 
         BusData data = busQueue.Dequeue();
         GameObject busObj = Instantiate(busPrefab, busSpawnPoint.position, busSpawnPoint.rotation);
@@ -50,5 +56,6 @@ public class BusController : MonoBehaviour
                 CurrentBus.traits.Add(trait);
             }
         }
+        MovementManager.Instance.MoveGradual(busObj, busBoardingPoint, CurrentBus.moveSpeed);
     }
 }

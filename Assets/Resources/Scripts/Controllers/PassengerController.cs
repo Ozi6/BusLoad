@@ -38,6 +38,9 @@ public class PassengerController : MonoBehaviour
     public void ProcessQueue()
     {
         Bus currentBus = BusController.Instance.CurrentBus;
+        if (currentBus == null)
+            return;
+
         Queue<Passenger> tempQueue = new Queue<Passenger>();
 
         while (waitingQueue.Count > 0)

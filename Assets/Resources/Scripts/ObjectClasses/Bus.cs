@@ -8,6 +8,8 @@ public class Bus : MonoBehaviour
     public List<BusTrait> traits = new List<BusTrait>();
     public Renderer bodyRenderer;
     public float moveSpeed = 5f;
+    public Transform[] passengerPositions = new Transform[3];
+    private int currentPassengerIndex = 0;
 
     public void AddPassenger(Passenger passenger)
     {
@@ -18,8 +20,17 @@ public class Bus : MonoBehaviour
         passenger.transform.SetParent(transform);
         GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
 
-        if (Passengers.Count >= 3)
-            BusController.Instance.DepartBus();
+        Vector3 boardingPosition = transform.position + new Vector3(0, 0, 2f);
+        MovementManager.Instance.MoveGradual(passenger.gameObject, boardingPosition, 5f, () =>
+        {
+            if (currentPassengerIndex < passengerPositions.Length)
+            {
+                MovementManager.Instance.MoveInstant(passenger.gameObject, passengerPositions[currentPassengerIndex]);
+                currentPassengerIndex++;
+                if (Passengers.Count >= 3 && currentPassengerIndex >= 3)
+                    BusController.Instance.DepartBus();
+            }
+        });
     }
 
     public void SetColor(PassengerColor color)
@@ -38,20 +49,5 @@ public class Bus : MonoBehaviour
             };
             bodyRenderer.material.color = renderColor;
         }
-    }
-
-    public void DepartToDestination(Transform destination)
-    {
-        StartCoroutine(MoveToDestination(destination));
-    }
-
-    private System.Collections.IEnumerator MoveToDestination(Transform destination)
-    {
-        while (Vector3.Distance(transform.position, destination.position) > 0.1f)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, destination.position, moveSpeed * Time.deltaTime);
-            yield return null;
-        }
-        Destroy(gameObject);
     }
 }
