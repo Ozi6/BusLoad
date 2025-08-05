@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     public void RemovePassengerFromGrid(Vector2Int position)
     {
         gridPassengers.Remove(position);
-        PassengerController.Instance.FloodFillInteractable(position);
+        FloodFillManager.Instance.FloodFillInteractable(position);
     }
 
     private void SpawnPassengers()
@@ -87,21 +87,7 @@ public class GameManager : MonoBehaviour
             passengerObj.transform.position = worldPos;
         }
 
-        UpdateInteractablePassengers();
-    }
-
-    private void UpdateInteractablePassengers()
-    {
-        int maxY = int.MinValue;
-        foreach (Vector2Int pos in gridPassengers.Keys)
-            if (pos.y > maxY)
-                maxY = pos.y;
-
-        foreach (var pair in gridPassengers)
-        {
-            bool isInteractable = pair.Key.y == maxY;
-            pair.Value.SetInteractable(isInteractable);
-        }
+        FloodFillManager.Instance.InitializeInteractablePassengers();
     }
 
     public void RespawnPassengers()
