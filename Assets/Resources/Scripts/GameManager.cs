@@ -6,14 +6,39 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public LevelData levelData;
     public GameObject passengerPrefab;
+    public GameObject gridSquarePrefab;
     public Transform gridParent;
     public Dictionary<Vector2Int, Passenger> gridPassengers = new Dictionary<Vector2Int, Passenger>();
+    private const int GRID_SIZE = 12;
+    private const float GRID_SPACING = 2f;
 
     private void Awake() => Instance = this;
 
     private void Start()
     {
+        InitializeGrid();
         Invoke(nameof(SpawnPassengers), 0.1f);
+    }
+
+    private void InitializeGrid()
+    {
+        if (gridSquarePrefab == null)
+            return;
+
+        if (gridParent == null)
+            gridParent = new GameObject("GridParent").transform;
+
+        for (int x = 0; x < GRID_SIZE; x++)
+        {
+            for (int y = 0; y < GRID_SIZE; y++)
+            {
+                Vector3 worldPos = new Vector3(gridParent.transform.position.x + x * GRID_SPACING, 0.1f, gridParent.transform.position.z + y * GRID_SPACING);
+                GameObject gridSquare = Instantiate(gridSquarePrefab, worldPos, Quaternion.identity, gridParent);
+                gridSquare.name = $"GridSquare_{x}_{y}";
+
+                gridSquare.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+            }
+        }
     }
 
     public bool HasPassengerAt(Vector2Int position) => gridPassengers.ContainsKey(position);
@@ -31,6 +56,10 @@ public class GameManager : MonoBehaviour
 
         foreach (PassengerData data in levelData.passengers)
         {
+            if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
+                data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
+                continue;
+
             GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
             Passenger passenger = passengerObj.GetComponent<Passenger>();
             passenger.SetColor(data.color);
@@ -50,7 +79,11 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            Vector3 worldPos = new Vector3(data.gridPosition.x, 0.5f, data.gridPosition.y);
+            Vector3 worldPos = new Vector3(
+                gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
+                0.5f,
+                gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
+            );
             passengerObj.transform.position = worldPos;
         }
 
@@ -82,12 +115,6 @@ public class GameManager : MonoBehaviour
 
     public Vector2Int GetGridBounds()
     {
-        int maxX = 0, maxY = 0;
-        foreach (Vector2Int pos in gridPassengers.Keys)
-        {
-            maxX = Mathf.Max(maxX, pos.x);
-            maxY = Mathf.Max(maxY, pos.y);
-        }
-        return new Vector2Int(maxX + 1, maxY + 1);
+        return new Vector2Int(GRID_SIZE, GRID_SIZE);
     }
 }
