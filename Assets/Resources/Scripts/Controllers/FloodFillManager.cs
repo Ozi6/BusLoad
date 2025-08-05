@@ -5,14 +5,6 @@ public class FloodFillManager : MonoBehaviour
 {
     public static FloodFillManager Instance;
 
-    private Vector2Int[] directions = new Vector2Int[]
-    {
-        new Vector2Int(0, 1),   // Up
-        new Vector2Int(0, -1),  // Down
-        new Vector2Int(1, 0),   // Right
-        new Vector2Int(-1, 0)   // Left
-    };
-
     private void Awake() => Instance = this;
 
     public void FloodFillInteractable(Vector2Int startPos)
@@ -35,7 +27,7 @@ public class FloodFillManager : MonoBehaviour
                 continue;
             }
 
-            foreach (Vector2Int dir in directions)
+            foreach (Vector2Int dir in DirectionVectors.CardinalDirections)
             {
                 Vector2Int next = current + dir;
                 if (IsValidPosition(next, gridSize) && !visited.ContainsKey(next))
@@ -101,7 +93,7 @@ public class FloodFillManager : MonoBehaviour
                 continue;
             }
 
-            foreach (Vector2Int dir in directions)
+            foreach (Vector2Int dir in DirectionVectors.CardinalDirections)
             {
                 Vector2Int next = current + dir;
                 if (IsValidPosition(next, gridSize) && !visited.Contains(next))

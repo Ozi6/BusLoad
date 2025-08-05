@@ -111,14 +111,7 @@ public class AStarPathfinder
     {
         var neighbors = new List<Vector2Int>();
 
-        Vector2Int[] directions = {
-            new Vector2Int(0, 1),   // Up
-            new Vector2Int(0, -1),  // Down
-            new Vector2Int(-1, 0),  // Left
-            new Vector2Int(1, 0)    // Right
-        };
-
-        foreach (var direction in directions)
+        foreach (var direction in DirectionVectors.CardinalDirections)
         {
             Vector2Int neighbor = position + direction;
             if (IsValidPosition(neighbor))
