@@ -1,10 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MovementManager : MonoBehaviour
 {
     public static MovementManager Instance;
     public float defaultMoveSpeed = 5f;
+    private Dictionary<GameObject, Coroutine> activeMovements = new Dictionary<GameObject, Coroutine>();
 
     private void Awake()
     {
@@ -21,20 +23,43 @@ public class MovementManager : MonoBehaviour
     {
         if (obj == null)
             return;
-        StartCoroutine(MoveToPosition(obj, targetPosition, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
+
+        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
+        {
+            StopCoroutine(activeMovements[obj]);
+            activeMovements.Remove(obj);
+        }
+
+        Coroutine newMovement = StartCoroutine(MoveToPosition(obj, targetPosition, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
+        activeMovements[obj] = newMovement;
     }
 
     public void MoveGradual(GameObject obj, Transform target, float speed = 0f, System.Action onComplete = null)
     {
         if (obj == null || target == null)
             return;
-        StartCoroutine(MoveToPosition(obj, target.position, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
+
+        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
+        {
+            StopCoroutine(activeMovements[obj]);
+            activeMovements.Remove(obj);
+        }
+
+        Coroutine newMovement = StartCoroutine(MoveToPosition(obj, target.position, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
+        activeMovements[obj] = newMovement;
     }
 
     public void MoveInstant(GameObject obj, Vector3 targetPosition)
     {
         if (obj == null)
             return;
+
+        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
+        {
+            StopCoroutine(activeMovements[obj]);
+            activeMovements.Remove(obj);
+        }
+
         obj.transform.position = targetPosition;
     }
 
@@ -42,6 +67,13 @@ public class MovementManager : MonoBehaviour
     {
         if (obj == null || target == null)
             return;
+
+        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
+        {
+            StopCoroutine(activeMovements[obj]);
+            activeMovements.Remove(obj);
+        }
+
         obj.transform.position = target.position;
     }
 
@@ -53,6 +85,7 @@ public class MovementManager : MonoBehaviour
             yield return null;
         }
         obj.transform.position = targetPosition;
+        activeMovements.Remove(obj);
         onComplete?.Invoke();
     }
 }
