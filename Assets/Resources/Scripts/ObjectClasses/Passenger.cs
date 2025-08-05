@@ -7,22 +7,30 @@ public class Passenger : MonoBehaviour
     public Vector2Int GridPosition { get; set; }
     public List<PassengerTrait> traits = new List<PassengerTrait>();
     public Renderer bodyRenderer;
+    private Collider _collider;
+    private bool _isInteractable = false;
+    public bool IsInteractable => _isInteractable;
+
+    private void Awake()
+    {
+        _collider = GetComponent<Collider>();
+    }
 
     void Update()
     {
+        if (!_isInteractable)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 Passenger passenger = hit.collider.GetComponentInParent<Passenger>();
                 if (passenger == this)
                 {
-                    Debug.Log("Passenger clicked via raycast");
                     foreach (PassengerTrait trait in passenger.traits)
                         trait.OnSelected(passenger);
-
                     PassengerController.Instance.SelectPassenger(passenger);
                 }
             }
@@ -61,5 +69,12 @@ public class Passenger : MonoBehaviour
             };
             bodyRenderer.material.color = renderColor;
         }
+    }
+
+    public void SetInteractable(bool isInteractable)
+    {
+        _isInteractable = isInteractable;
+        if (_collider != null)
+            _collider.enabled = isInteractable;
     }
 }

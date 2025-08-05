@@ -43,7 +43,8 @@ public class PassengerHover : MonoBehaviour
 
     void SetHovered(bool hovered)
     {
-        if (isHovered == hovered) return;
+        if (isHovered == hovered)
+            return;
         isHovered = hovered;
 
         for (int i = 0; i < renderers.Length; i++)

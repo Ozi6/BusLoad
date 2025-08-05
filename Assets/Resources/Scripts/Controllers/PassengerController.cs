@@ -22,17 +22,58 @@ public class PassengerController : MonoBehaviour
     public void SelectPassenger(Passenger passenger)
     {
         CheckRopedNearby(passenger.GridPosition);
-
         Bus currentBus = BusController.Instance.CurrentBus;
 
         if (BusController.Instance.IsBusAtBoardingPoint && currentBus != null && passenger.CanBoardBus(currentBus))
+        {
             currentBus.AddPassenger(passenger);
+            GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
+        }
         else
         {
             if (QueueManager.Instance.IsQueueFull())
                 QueueManager.Instance.RemoveOldestIfFull();
-
             QueueManager.Instance.AddToQueue(passenger);
+            GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
+        }
+    }
+
+    public void FloodFillInteractable(Vector2Int startPos)
+    {
+        Vector2Int gridSize = GameManager.Instance.GetGridBounds();
+        Dictionary<Vector2Int, bool> visited = new Dictionary<Vector2Int, bool>();
+        Queue<Vector2Int> queue = new Queue<Vector2Int>();
+        queue.Enqueue(startPos);
+        visited[startPos] = true;
+
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            new Vector2Int(0, 1),
+            new Vector2Int(0, -1),
+            new Vector2Int(1, 0),
+            new Vector2Int(-1, 0)
+        };
+
+        while (queue.Count > 0)
+        {
+            Vector2Int current = queue.Dequeue();
+
+            if (GameManager.Instance.HasPassengerAt(current))
+            {
+                Passenger passenger = GameManager.Instance.gridPassengers[current];
+                passenger.SetInteractable(true);
+                continue;
+            }
+
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int next = current + dir;
+                if (next.x >= 0 && next.x < gridSize.x && next.y >= 0 && next.y < gridSize.y && !visited.ContainsKey(next))
+                {
+                    visited[next] = true;
+                    queue.Enqueue(next);
+                }
+            }
         }
     }
 
@@ -40,7 +81,6 @@ public class PassengerController : MonoBehaviour
     {
         if (!BusController.Instance.IsBusAtBoardingPoint || BusController.Instance.CurrentBus == null)
             return;
-
         Bus currentBus = BusController.Instance.CurrentBus;
         QueueManager.Instance.ProcessQueueForBus(currentBus);
     }

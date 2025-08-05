@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     public LevelData levelData;
     public GameObject passengerPrefab;
     public Transform gridParent;
-    private Dictionary<Vector2Int, Passenger> gridPassengers = new Dictionary<Vector2Int, Passenger>();
+    public Dictionary<Vector2Int, Passenger> gridPassengers = new Dictionary<Vector2Int, Passenger>();
 
     private void Awake() => Instance = this;
 
@@ -18,7 +18,11 @@ public class GameManager : MonoBehaviour
 
     public bool HasPassengerAt(Vector2Int position) => gridPassengers.ContainsKey(position);
 
-    public void RemovePassengerFromGrid(Vector2Int position) => gridPassengers.Remove(position);
+    public void RemovePassengerFromGrid(Vector2Int position)
+    {
+        gridPassengers.Remove(position);
+        PassengerController.Instance.FloodFillInteractable(position);
+    }
 
     private void SpawnPassengers()
     {
@@ -29,9 +33,9 @@ public class GameManager : MonoBehaviour
         {
             GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
             Passenger passenger = passengerObj.GetComponent<Passenger>();
-
             passenger.SetColor(data.color);
             passenger.GridPosition = data.gridPosition;
+            passenger.SetInteractable(false);
             gridPassengers[data.gridPosition] = passenger;
 
             foreach (string traitType in data.traitTypes)
@@ -41,17 +45,29 @@ public class GameManager : MonoBehaviour
                 {
                     PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
                     passenger.traits.Add(trait);
-
                     if (trait is RopedTrait roped)
                         roped.Initialize(passenger);
                 }
             }
 
-            Vector3 worldPos = GridManager.Instance != null ?
-                GridManager.Instance.GridToWorldPosition(data.gridPosition) + Vector3.up * 1f :
-                new Vector3(data.gridPosition.x, 0.5f, data.gridPosition.y);
-
+            Vector3 worldPos = new Vector3(data.gridPosition.x, 0.5f, data.gridPosition.y);
             passengerObj.transform.position = worldPos;
+        }
+
+        UpdateInteractablePassengers();
+    }
+
+    private void UpdateInteractablePassengers()
+    {
+        int maxY = int.MinValue;
+        foreach (Vector2Int pos in gridPassengers.Keys)
+            if (pos.y > maxY)
+                maxY = pos.y;
+
+        foreach (var pair in gridPassengers)
+        {
+            bool isInteractable = pair.Key.y == maxY;
+            pair.Value.SetInteractable(isInteractable);
         }
     }
 
@@ -62,5 +78,16 @@ public class GameManager : MonoBehaviour
                 DestroyImmediate(passenger.gameObject);
         gridPassengers.Clear();
         SpawnPassengers();
+    }
+
+    public Vector2Int GetGridBounds()
+    {
+        int maxX = 0, maxY = 0;
+        foreach (Vector2Int pos in gridPassengers.Keys)
+        {
+            maxX = Mathf.Max(maxX, pos.x);
+            maxY = Mathf.Max(maxY, pos.y);
+        }
+        return new Vector2Int(maxX + 1, maxY + 1);
     }
 }
