@@ -11,6 +11,7 @@ public class BusController : MonoBehaviour
     public Transform busDeparturePoint;
     public GameObject busPrefab;
     private Queue<BusData> busQueue = new Queue<BusData>();
+    public bool IsBusAtBoardingPoint { get; private set; }
 
     private void Awake()
     {
@@ -29,11 +30,12 @@ public class BusController : MonoBehaviour
     {
         if (CurrentBus != null)
         {
+            IsBusAtBoardingPoint = false;
             MovementManager.Instance.MoveGradual(CurrentBus.gameObject, busDeparturePoint, CurrentBus.moveSpeed, () =>
             {
                 Destroy(CurrentBus.gameObject);
+                CurrentBus = null;
                 SpawnNextBus();
-                PassengerController.Instance.ProcessQueue();
             });
         }
     }
@@ -57,6 +59,11 @@ public class BusController : MonoBehaviour
                 CurrentBus.traits.Add(trait);
             }
         }
-        MovementManager.Instance.MoveGradual(busObj, busBoardingPoint, CurrentBus.moveSpeed);
+
+        MovementManager.Instance.MoveGradual(busObj, busBoardingPoint, CurrentBus.moveSpeed, () =>
+        {
+            IsBusAtBoardingPoint = true;
+            PassengerController.Instance.ProcessQueue();
+        });
     }
 }

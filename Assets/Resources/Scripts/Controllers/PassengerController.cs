@@ -25,7 +25,7 @@ public class PassengerController : MonoBehaviour
 
         Bus currentBus = BusController.Instance.CurrentBus;
 
-        if (passenger.CanBoardBus(currentBus))
+        if (BusController.Instance.IsBusAtBoardingPoint && currentBus != null && passenger.CanBoardBus(currentBus))
             currentBus.AddPassenger(passenger);
         else
         {
@@ -38,6 +38,9 @@ public class PassengerController : MonoBehaviour
 
     public void ProcessQueue()
     {
+        if (!BusController.Instance.IsBusAtBoardingPoint || BusController.Instance.CurrentBus == null)
+            return;
+
         Bus currentBus = BusController.Instance.CurrentBus;
         QueueManager.Instance.ProcessQueueForBus(currentBus);
     }
