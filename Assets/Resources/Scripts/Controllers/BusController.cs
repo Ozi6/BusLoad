@@ -33,6 +33,7 @@ public class BusController : MonoBehaviour
             {
                 Destroy(CurrentBus.gameObject);
                 SpawnNextBus();
+                PassengerController.Instance.ProcessQueue();
             });
         }
     }

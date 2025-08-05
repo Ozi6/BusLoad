@@ -1,9 +1,10 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class PassengerData
 {
     public PassengerColor color;
     public Vector2Int gridPosition;
-    public string[] traitTypes;
+    public List<string> traitTypes;
 }

@@ -10,7 +10,11 @@ public class GameManager : MonoBehaviour
     private Dictionary<Vector2Int, Passenger> gridPassengers = new Dictionary<Vector2Int, Passenger>();
 
     private void Awake() => Instance = this;
-    private void Start() => SpawnPassengers();
+
+    private void Start()
+    {
+        Invoke(nameof(SpawnPassengers), 0.1f);
+    }
 
     public bool HasPassengerAt(Vector2Int position) => gridPassengers.ContainsKey(position);
 
@@ -18,6 +22,9 @@ public class GameManager : MonoBehaviour
 
     private void SpawnPassengers()
     {
+        if (levelData == null)
+            return;
+
         foreach (PassengerData data in levelData.passengers)
         {
             GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
@@ -40,8 +47,20 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            Vector3 worldPos = new Vector3(data.gridPosition.x, 0.5f, data.gridPosition.y);
+            Vector3 worldPos = GridManager.Instance != null ?
+                GridManager.Instance.GridToWorldPosition(data.gridPosition) + Vector3.up * 1f :
+                new Vector3(data.gridPosition.x, 0.5f, data.gridPosition.y);
+
             passengerObj.transform.position = worldPos;
         }
+    }
+
+    public void RespawnPassengers()
+    {
+        foreach (var passenger in gridPassengers.Values)
+            if (passenger != null)
+                DestroyImmediate(passenger.gameObject);
+        gridPassengers.Clear();
+        SpawnPassengers();
     }
 }

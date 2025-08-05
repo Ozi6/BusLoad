@@ -29,33 +29,16 @@ public class PassengerController : MonoBehaviour
             currentBus.AddPassenger(passenger);
         else
         {
-            if (waitingQueue.Count >= maxQueueSize)
-                waitingQueue.Dequeue();
-            waitingQueue.Enqueue(passenger);
+            if (QueueManager.Instance.IsQueueFull())
+                QueueManager.Instance.RemoveOldestIfFull();
+
+            QueueManager.Instance.AddToQueue(passenger);
         }
     }
 
     public void ProcessQueue()
     {
         Bus currentBus = BusController.Instance.CurrentBus;
-        if (currentBus == null)
-            return;
-
-        Queue<Passenger> tempQueue = new Queue<Passenger>();
-
-        while (waitingQueue.Count > 0)
-        {
-            Passenger passenger = waitingQueue.Dequeue();
-            if (passenger.CanBoardBus(currentBus))
-            {
-                currentBus.AddPassenger(passenger);
-                if (currentBus.Passengers.Count >= 3)
-                    break;
-            }
-            else
-                tempQueue.Enqueue(passenger);
-        }
-
-        waitingQueue = tempQueue;
+        QueueManager.Instance.ProcessQueueForBus(currentBus);
     }
 }
