@@ -6,7 +6,7 @@ public class Passenger : MonoBehaviour
     public PassengerColor Color { get; set; }
     public Vector2Int GridPosition { get; set; }
     public List<PassengerTrait> traits = new List<PassengerTrait>();
-    public Renderer bodyRenderer;
+    public List<Renderer> bodyRenderers = new List<Renderer>();
     private Collider _collider;
     private bool _isInteractable = false;
     public bool IsInteractable => _isInteractable;
@@ -14,6 +14,8 @@ public class Passenger : MonoBehaviour
     private void Awake()
     {
         _collider = GetComponent<Collider>();
+        if (bodyRenderers.Count == 0)
+            bodyRenderers.AddRange(GetComponentsInChildren<Renderer>());
     }
 
     void Update()
@@ -56,19 +58,19 @@ public class Passenger : MonoBehaviour
     public void SetColor(PassengerColor color)
     {
         Color = color;
-        if (bodyRenderer != null)
+        Color renderColor = color switch
         {
-            Color renderColor = color switch
-            {
-                PassengerColor.Red => UnityEngine.Color.red,
-                PassengerColor.Blue => UnityEngine.Color.blue,
-                PassengerColor.Green => UnityEngine.Color.green,
-                PassengerColor.Yellow => UnityEngine.Color.yellow,
-                PassengerColor.Purple => new Color(0.5f, 0f, 1f),
-                _ => UnityEngine.Color.white
-            };
-            bodyRenderer.material.color = renderColor;
-        }
+            PassengerColor.Red => UnityEngine.Color.red,
+            PassengerColor.Blue => UnityEngine.Color.blue,
+            PassengerColor.Green => UnityEngine.Color.green,
+            PassengerColor.Yellow => UnityEngine.Color.yellow,
+            PassengerColor.Purple => new Color(0.5f, 0f, 1f),
+            _ => UnityEngine.Color.white
+        };
+
+        foreach (var renderer in bodyRenderers)
+            if (renderer != null)
+                renderer.material.color = renderColor;
     }
 
     public void SetInteractable(bool isInteractable)
