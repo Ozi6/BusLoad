@@ -7,7 +7,7 @@ public class Bus : MonoBehaviour
     public List<Passenger> Passengers { get; set; } = new List<Passenger>();
     public List<BusTrait> traits = new List<BusTrait>();
     public Renderer bodyRenderer;
-    public float moveSpeed = 5f;
+    public float moveSpeed = 15f;
     public Transform[] passengerPositions = new Transform[3];
     private int currentPassengerIndex = 0;
 

@@ -14,14 +14,53 @@ public class QueueManager : MonoBehaviour
 
     public bool AddToQueue(Passenger passenger)
     {
+        if (IsPassengerInQueue(passenger))
+            return true;
+
         int emptySlot = GetLeftmostEmptySlot();
         if (emptySlot == -1)
             return false;
 
         queuedPassengers[emptySlot] = passenger;
-        MovementManager.Instance.MoveGradual(passenger.gameObject, queuePositions[emptySlot]);
-
         return true;
+    }
+
+    public void MovePassengerToQueuePosition(Passenger passenger)
+    {
+        int slot = GetPassengerSlot(passenger);
+        if (slot != -1)
+            MovementManager.Instance.MoveGradual(passenger.gameObject, queuePositions[slot]);
+    }
+
+    public bool IsPassengerInQueue(Passenger passenger)
+    {
+        for (int i = 0; i < queuedPassengers.Length; i++)
+            if (queuedPassengers[i] == passenger)
+                return true;
+        return false;
+    }
+
+    public void RemoveFromQueue(Passenger passenger)
+    {
+        for (int i = 0; i < queuedPassengers.Length; i++)
+        {
+            if (queuedPassengers[i] == passenger)
+            {
+                queuedPassengers[i] = null;
+                if (MovementManager.Instance.HasActiveMovement(passenger.gameObject))
+                    MovementManager.Instance.CancelMovement(passenger.gameObject);
+                CompactQueue();
+                return;
+            }
+        }
+    }
+
+    private int GetPassengerSlot(Passenger passenger)
+    {
+        for (int i = 0; i < queuedPassengers.Length; i++)
+            if (queuedPassengers[i] == passenger)
+                return i;
+        return -1;
     }
 
     public void ProcessQueueForBus(Bus bus)
@@ -36,11 +75,13 @@ public class QueueManager : MonoBehaviour
                 queuedPassengers[i] = null;
                 toRemove.Add(i);
 
-                MovementManager.Instance.MoveGradual(passenger.gameObject, bus.transform, 0f, () => {
-                    bus.AddPassenger(passenger);
-                });
+                if (MovementManager.Instance.HasActiveMovement(passenger.gameObject))
+                    MovementManager.Instance.CancelMovement(passenger.gameObject);
 
-                if (bus.Passengers.Count >= 3) break;
+                MovementManager.Instance.MoveGradual(passenger.gameObject, bus.transform, 0f, () => { bus.AddPassenger(passenger); });
+
+                if (bus.Passengers.Count >= 3)
+                    break;
             }
         }
 
@@ -69,10 +110,8 @@ public class QueueManager : MonoBehaviour
     private int GetLeftmostEmptySlot()
     {
         for (int i = 0; i < queuedPassengers.Length; i++)
-        {
             if (queuedPassengers[i] == null)
                 return i;
-        }
         return -1;
     }
 

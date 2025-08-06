@@ -8,7 +8,6 @@ public class PassengerController : MonoBehaviour
     public Queue<Passenger> waitingQueue = new Queue<Passenger>();
     public int maxQueueSize = 5;
     private List<RopedTrait> ropedTraits = new List<RopedTrait>();
-    private const float GRID_SPACING = 2f;
 
     private void Awake() => Instance = this;
 
@@ -27,9 +26,16 @@ public class PassengerController : MonoBehaviour
         Bus currentBus = BusController.Instance.CurrentBus;
 
         if (BusController.Instance.IsBusAtBoardingPoint && currentBus != null && passenger.CanBoardBus(currentBus))
+        {
+            passenger.SetInteractable(false);
             StartCoroutine(MovePassengerToBoarding(passenger, currentBus));
-        else
+        }
+        else if (!QueueManager.Instance.IsQueueFull())
+        {
+            if (!QueueManager.Instance.IsPassengerInQueue(passenger))
+                QueueManager.Instance.AddToQueue(passenger);
             StartCoroutine(MovePassengerToQueue(passenger));
+        }
     }
 
     private IEnumerator MovePassengerToBoarding(Passenger passenger, Bus bus)
@@ -39,11 +45,22 @@ public class PassengerController : MonoBehaviour
 
         GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
 
+        bool pathMovementComplete = false;
+        bool boardingMovementComplete = false;
+
         if (pathToHighest.Count > 1)
-            yield return StartCoroutine(MoveAlongPath(passenger.gameObject, pathToHighest));
+        {
+            MovementManager.Instance.MoveAlongPath(passenger.gameObject, pathToHighest, 0f, () => { pathMovementComplete = true; });
+
+            yield return new WaitUntil(() => pathMovementComplete);
+        }
+        else
+            pathMovementComplete = true;
 
         Vector3 boardingPosition = BusController.Instance.busBoardingPoint.position + new Vector3(0, 0, -2f);
-        yield return StartCoroutine(MoveToWorldPosition(passenger.gameObject, boardingPosition));
+        MovementManager.Instance.MoveGradual(passenger.gameObject, boardingPosition, 0f, () => { boardingMovementComplete = true; });
+
+        yield return new WaitUntil(() => boardingMovementComplete);
 
         bus.AddPassenger(passenger);
     }
@@ -54,44 +71,16 @@ public class PassengerController : MonoBehaviour
         List<Vector2Int> pathToHighest = GameManager.Instance.FindPathToHighestEmpty(startPos);
 
         GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
-
+        bool movementComplete = false;
         if (pathToHighest.Count > 1)
-            yield return StartCoroutine(MoveAlongPath(passenger.gameObject, pathToHighest));
-
-        if (QueueManager.Instance.IsQueueFull())
-            QueueManager.Instance.RemoveOldestIfFull();
-        QueueManager.Instance.AddToQueue(passenger);
-    }
-
-    private IEnumerator MoveAlongPath(GameObject passengerObj, List<Vector2Int> path)
-    {
-        for (int i = 1; i < path.Count; i++)
         {
-            Vector3 targetWorldPos = GridToWorldPosition(path[i]);
-            yield return StartCoroutine(MoveToWorldPosition(passengerObj, targetWorldPos));
+            MovementManager.Instance.MoveAlongPath(passenger.gameObject, pathToHighest, 0f, () => {
+                movementComplete = true;
+            });
+
+            yield return new WaitUntil(() => movementComplete);
         }
-    }
-
-    private IEnumerator MoveToWorldPosition(GameObject obj, Vector3 targetPosition)
-    {
-        float moveSpeed = 5f;
-
-        while (Vector3.Distance(obj.transform.position, targetPosition) > 0.1f)
-        {
-            obj.transform.position = Vector3.MoveTowards(obj.transform.position, targetPosition, moveSpeed * Time.deltaTime);
-            yield return null;
-        }
-
-        obj.transform.position = targetPosition;
-    }
-
-    private Vector3 GridToWorldPosition(Vector2Int gridPos)
-    {
-        return new Vector3(
-            GameManager.Instance.gridParent.transform.position.x + gridPos.x * GRID_SPACING,
-            0.5f,
-            GameManager.Instance.gridParent.transform.position.z + gridPos.y * GRID_SPACING
-        );
+        QueueManager.Instance.MovePassengerToQueuePosition(passenger);
     }
 
     public void ProcessQueue()
