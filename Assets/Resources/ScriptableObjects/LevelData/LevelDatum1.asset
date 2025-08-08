@@ -39,7 +39,8 @@ MonoBehaviour:
     traitTypes: []
   - color: 2
     gridPosition: {x: 2, y: 2}
-    traitTypes: []
+    traitTypes:
+    - RopedTrait
   buses:
   - color: 0
     traitTypes: []

@@ -39,6 +39,15 @@ public class Passenger : MonoBehaviour
         }
     }
 
+    public void RemoveTrait(PassengerTrait trait)
+    {
+        if (traits.Remove(trait))
+        {
+            Destroy(trait);
+            PassengerEvents.TriggerPassengerTraitsChanged(this);
+        }
+    }
+
     public bool CanBoardBus(Bus bus)
     {
         if (Color != bus.Color)

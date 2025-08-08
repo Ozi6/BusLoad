@@ -7,13 +7,19 @@ public class RopedTrait : PassengerTrait
     public void Initialize(Passenger passenger)
     {
         owner = passenger;
-        PassengerController.Instance.RegisterRoped(this);
     }
 
     public override void OnSelected(Passenger passenger) { }
+
     public override bool CanBoard(Passenger passenger, Bus bus) => false;
 
-    public void CheckUntie(Vector2Int clickedPosition)
+    protected override void OnNearbyPassengerSelected(Vector2Int clickedPosition)
+    {
+        if (owner == null) return;
+        CheckUntie(clickedPosition);
+    }
+
+    private void CheckUntie(Vector2Int clickedPosition)
     {
         if (Vector2Int.Distance(owner.GridPosition, clickedPosition) > 2f) return;
 
@@ -33,9 +39,7 @@ public class RopedTrait : PassengerTrait
 
         if (nearbyCount >= 2)
         {
-            PassengerController.Instance.UnregisterRoped(this);
-            owner.traits.Remove(this);
-            Destroy(this);
+            owner.RemoveTrait(this);
         }
     }
 }

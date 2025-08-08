@@ -7,24 +7,29 @@ public class PassengerController : MonoBehaviour
     public static PassengerController Instance;
     public Queue<Passenger> waitingQueue = new Queue<Passenger>();
     public int maxQueueSize = 5;
-    private List<RopedTrait> ropedTraits = new List<RopedTrait>();
 
     private void Awake() => Instance = this;
 
-    public void RegisterRoped(RopedTrait roped) => ropedTraits.Add(roped);
-    public void UnregisterRoped(RopedTrait roped) => ropedTraits.Remove(roped);
-
-    public void CheckRopedNearby(Vector2Int position)
+    private void OnEnable()
     {
-        foreach (RopedTrait roped in ropedTraits)
-            roped.CheckUntie(position);
+        PassengerEvents.OnPassengerSelected += HandlePassengerSelected;
+    }
+
+    private void OnDisable()
+    {
+        PassengerEvents.OnPassengerSelected -= HandlePassengerSelected;
+    }
+
+    private void HandlePassengerSelected(Vector2Int position)
+    {
+
     }
 
     public void SelectPassenger(Passenger passenger)
     {
-        CheckRopedNearby(passenger.GridPosition);
-        Bus currentBus = BusController.Instance.CurrentBus;
+        PassengerEvents.TriggerPassengerSelected(passenger.GridPosition);
 
+        Bus currentBus = BusController.Instance.CurrentBus;
         if (BusController.Instance.IsBusAtBoardingPoint && currentBus != null && passenger.CanBoardBus(currentBus))
         {
             passenger.SetInteractable(false);
@@ -42,16 +47,13 @@ public class PassengerController : MonoBehaviour
     {
         Vector2Int startPos = passenger.GridPosition;
         List<Vector2Int> pathToHighest = GameManager.Instance.FindPathToHighestEmpty(startPos);
-
         GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
-
         bool pathMovementComplete = false;
         bool boardingMovementComplete = false;
 
         if (pathToHighest.Count > 1)
         {
             MovementManager.Instance.MoveAlongPath(passenger.gameObject, pathToHighest, 0f, () => { pathMovementComplete = true; });
-
             yield return new WaitUntil(() => pathMovementComplete);
         }
         else
@@ -59,7 +61,6 @@ public class PassengerController : MonoBehaviour
 
         Vector3 boardingPosition = BusController.Instance.busBoardingPoint.position + new Vector3(0, 0, -2f);
         MovementManager.Instance.MoveGradual(passenger.gameObject, boardingPosition, 0f, () => { boardingMovementComplete = true; });
-
         yield return new WaitUntil(() => boardingMovementComplete);
 
         bus.AddPassenger(passenger);
@@ -69,17 +70,17 @@ public class PassengerController : MonoBehaviour
     {
         Vector2Int startPos = passenger.GridPosition;
         List<Vector2Int> pathToHighest = GameManager.Instance.FindPathToHighestEmpty(startPos);
-
         GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
         bool movementComplete = false;
+
         if (pathToHighest.Count > 1)
         {
             MovementManager.Instance.MoveAlongPath(passenger.gameObject, pathToHighest, 0f, () => {
                 movementComplete = true;
             });
-
             yield return new WaitUntil(() => movementComplete);
         }
+
         QueueManager.Instance.MovePassengerToQueuePosition(passenger);
     }
 
@@ -87,6 +88,7 @@ public class PassengerController : MonoBehaviour
     {
         if (!BusController.Instance.IsBusAtBoardingPoint || BusController.Instance.CurrentBus == null)
             return;
+
         Bus currentBus = BusController.Instance.CurrentBus;
         QueueManager.Instance.ProcessQueueForBus(currentBus);
     }

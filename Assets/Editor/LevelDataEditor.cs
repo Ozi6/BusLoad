@@ -21,6 +21,8 @@ public class LevelDataEditor : Editor
     private void OnEnable()
     {
         levelData = (LevelData)target;
+        availableTraits = new List<string> { "RopedTrait" };
+        selectedTraits = new bool[availableTraits.Count];
     }
 
     public override void OnInspectorGUI()
