@@ -24,10 +24,8 @@ public class GameManager : MonoBehaviour
     {
         if (gridSquarePrefab == null)
             return;
-
         if (gridParent == null)
             gridParent = new GameObject("GridParent").transform;
-
         for (int x = 0; x < GRID_SIZE; x++)
         {
             for (int y = 0; y < GRID_SIZE; y++)
@@ -35,7 +33,6 @@ public class GameManager : MonoBehaviour
                 Vector3 worldPos = new Vector3(gridParent.transform.position.x + x * GRID_SPACING, 0.1f, gridParent.transform.position.z + y * GRID_SPACING);
                 GameObject gridSquare = Instantiate(gridSquarePrefab, worldPos, Quaternion.identity, gridParent);
                 gridSquare.name = $"GridSquare_{x}_{y}";
-
                 gridSquare.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
             }
         }
@@ -70,12 +67,10 @@ public class GameManager : MonoBehaviour
             foreach (string traitType in data.traitTypes)
             {
                 System.Type type = System.Type.GetType(traitType);
-                if (type != null)
+                if (type != null && type.IsSubclassOf(typeof(PassengerTrait)))
                 {
                     PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
                     passenger.traits.Add(trait);
-                    if (trait is RopedTrait roped)
-                        roped.Initialize(passenger);
                 }
             }
 

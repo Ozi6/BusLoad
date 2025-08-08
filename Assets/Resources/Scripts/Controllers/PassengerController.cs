@@ -27,19 +27,19 @@ public class PassengerController : MonoBehaviour
 
     public void SelectPassenger(Passenger passenger)
     {
-        PassengerEvents.TriggerPassengerSelected(passenger.GridPosition);
-
         Bus currentBus = BusController.Instance.CurrentBus;
         if (BusController.Instance.IsBusAtBoardingPoint && currentBus != null && passenger.CanBoardBus(currentBus))
         {
             passenger.SetInteractable(false);
             StartCoroutine(MovePassengerToBoarding(passenger, currentBus));
+            PassengerEvents.TriggerPassengerSelected(passenger.GridPosition);
         }
-        else if (!QueueManager.Instance.IsQueueFull())
+        else if (!QueueManager.Instance.IsQueueFull() && passenger.CanTraitMove(currentBus))
         {
             if (!QueueManager.Instance.IsPassengerInQueue(passenger))
                 QueueManager.Instance.AddToQueue(passenger);
             StartCoroutine(MovePassengerToQueue(passenger));
+            PassengerEvents.TriggerPassengerSelected(passenger.GridPosition);
         }
     }
 

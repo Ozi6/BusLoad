@@ -53,14 +53,21 @@ public class Passenger : MonoBehaviour
         if (Color != bus.Color)
             return false;
 
-        foreach (PassengerTrait trait in traits)
-            if (!trait.CanBoard(this, bus))
-                return false;
+        if (!CanTraitMove(bus))
+            return false;
 
         foreach (BusTrait trait in bus.traits)
             if (!trait.CanAcceptPassenger(bus, this))
                 return false;
 
+        return true;
+    }
+
+    public bool CanTraitMove(Bus bus)
+    {
+        foreach (PassengerTrait trait in traits)
+            if (!trait.CanBoard(this, bus))
+                return false;
         return true;
     }
 
