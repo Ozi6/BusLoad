@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Tunnel : MapObject
@@ -6,8 +7,14 @@ public class Tunnel : MapObject
     public Vector2Int SpawnDirection { get; set; }
     public List<PassengerData> PassengerQueue { get; set; } = new List<PassengerData>();
     public int CurrentSpawnIndex { get; set; } = 0;
+    [SerializeField] private TextMeshPro passengersInTunnelText;
 
     public bool HasPassengersLeft => CurrentSpawnIndex < PassengerQueue.Count;
+
+    private void Start()
+    {
+        UpdatePassengerText();
+    }
 
     public PassengerData PeekNextPassenger()
     {
@@ -20,21 +27,21 @@ public class Tunnel : MapObject
     public void ConsumeNextPassenger()
     {
         if (HasPassengersLeft)
+        {
             CurrentSpawnIndex++;
-    }
-
-    public PassengerData GetNextPassenger()
-    {
-        if (!HasPassengersLeft)
-            return null;
-
-        PassengerData passenger = PassengerQueue[CurrentSpawnIndex];
-        CurrentSpawnIndex++;
-        return passenger;
+            UpdatePassengerText();
+        }
     }
 
     public void ResetSpawnIndex()
     {
         CurrentSpawnIndex = 0;
+        UpdatePassengerText();
+    }
+
+    private void UpdatePassengerText()
+    {
+        if (passengersInTunnelText != null)
+            passengersInTunnelText.text = $"{PassengerQueue.Count - CurrentSpawnIndex}";
     }
 }
