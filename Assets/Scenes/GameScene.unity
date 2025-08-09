@@ -1401,6 +1401,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelData: {fileID: 11400000, guid: 8558c237ed842a04fa05af45f0cd0042, type: 2}
   passengerPrefab: {fileID: 3652023944654613110, guid: b94d32143eb641a4c80816d5514ebc3e, type: 3}
+  wallPrefab: {fileID: 7585947856676388579, guid: 75eba8380d0d0a9419b540f6b5ec90e5, type: 3}
+  tunnelPrefab: {fileID: 5683479636957457780, guid: 5514ad37495240f4abdd2c59619b4045, type: 3}
   gridSquarePrefab: {fileID: 4485351534136178426, guid: 54d4d25a4c9df874cbae3f77475f9b95, type: 3}
   gridParent: {fileID: 581601506}
 --- !u!4 &1958063946

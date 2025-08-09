@@ -4,29 +4,24 @@ using UnityEngine;
 public class FloodFillManager : MonoBehaviour
 {
     public static FloodFillManager Instance;
-
     private void Awake() => Instance = this;
-
     public void FloodFillInteractable(Vector2Int startPos)
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
         Dictionary<Vector2Int, bool> visited = new Dictionary<Vector2Int, bool>();
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
-
         queue.Enqueue(startPos);
         visited[startPos] = true;
-
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
-
-            if (GameManager.Instance.HasPassengerAt(current))
+            if (GameManager.Instance.HasOccupantAt(current))
             {
-                Passenger passenger = GameManager.Instance.gridPassengers[current];
-                passenger.SetInteractable(true);
-                continue;
+                MapObject obj = GameManager.Instance.gridObjects[current];
+                obj.OnReachedByFlood();
+                if (obj.BlocksFlood)
+                    continue;
             }
-
             foreach (Vector2Int dir in DirectionVectors.CardinalDirections)
             {
                 Vector2Int next = current + dir;
@@ -38,14 +33,11 @@ public class FloodFillManager : MonoBehaviour
             }
         }
     }
-
     public void InitializeInteractablePassengers()
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
         HashSet<Vector2Int> globallyReached = new HashSet<Vector2Int>();
-
         List<Vector2Int> highestEmptyPositions = FindHighestEmptyPositions();
-
         foreach (Vector2Int startPos in highestEmptyPositions)
         {
             if (globallyReached.Contains(startPos))
@@ -55,44 +47,36 @@ public class FloodFillManager : MonoBehaviour
                 globallyReached.Add(pos);
         }
     }
-
     private List<Vector2Int> FindHighestEmptyPositions()
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
         List<Vector2Int> highestEmpty = new List<Vector2Int>();
-
         int maxY = gridSize.y - 1;
-
         for (int x = 0; x < gridSize.x; x++)
         {
             Vector2Int pos = new Vector2Int(x, maxY);
-            if (!GameManager.Instance.HasPassengerAt(pos))
+            if (!GameManager.Instance.HasOccupantAt(pos))
                 highestEmpty.Add(pos);
         }
-
         return highestEmpty;
     }
-
     private HashSet<Vector2Int> PerformInitializationFloodFill(Vector2Int startPos)
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
         HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
-
         queue.Enqueue(startPos);
         visited.Add(startPos);
-
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
-
-            if (GameManager.Instance.HasPassengerAt(current))
+            if (GameManager.Instance.HasOccupantAt(current))
             {
-                Passenger passenger = GameManager.Instance.gridPassengers[current];
-                passenger.SetInteractable(true);
-                continue;
+                MapObject obj = GameManager.Instance.gridObjects[current];
+                obj.OnReachedByFlood();
+                if (obj.BlocksFlood)
+                    continue;
             }
-
             foreach (Vector2Int dir in DirectionVectors.CardinalDirections)
             {
                 Vector2Int next = current + dir;
@@ -103,10 +87,8 @@ public class FloodFillManager : MonoBehaviour
                 }
             }
         }
-
         return visited;
     }
-
     private bool IsValidPosition(Vector2Int pos, Vector2Int gridSize)
     {
         return pos.x >= 0 && pos.x < gridSize.x && pos.y >= 0 && pos.y < gridSize.y;

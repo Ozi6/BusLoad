@@ -42,6 +42,17 @@ MonoBehaviour:
     gridPosition: {x: 2, y: 2}
     traitTypes:
     - RopedTrait
+  walls:
+  - gridPosition: {x: 0, y: 5}
+  - gridPosition: {x: 1, y: 5}
+  - gridPosition: {x: 2, y: 5}
+  tunnels:
+  - gridPosition: {x: 8, y: 8}
+    direction: {x: 0, y: 1}
+    spawnTemplate:
+      color: 0
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
   buses:
   - color: 0
     traitTypes: []

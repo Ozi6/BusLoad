@@ -1,8 +1,8 @@
 #if UNITY_EDITOR
-using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
+using UnityEngine;
 
 [CustomEditor(typeof(LevelData))]
 public class LevelDataEditor : Editor
@@ -11,12 +11,20 @@ public class LevelDataEditor : Editor
     private Vector2 scrollPosition;
     private int selectedPassengerIndex = -1;
     private bool showPassengers = true;
+    private bool showWalls = true;
+    private bool showTunnels = true;
     private bool showBuses = true;
 
     private bool gridEditMode = false;
+    private ObjectType selectedType = ObjectType.Passenger;
+    private bool removeMode = false;
     private PassengerColor selectedColor = PassengerColor.Red;
     private List<string> availableTraits = new List<string>();
     private bool[] selectedTraits = new bool[0];
+    private SpawnDirection selectedSpawnDirection = SpawnDirection.Up;
+
+    private enum ObjectType { Passenger, Wall, Tunnel }
+    private enum SpawnDirection { Up, Down, Left, Right }
 
     private void OnEnable()
     {
@@ -35,6 +43,10 @@ public class LevelDataEditor : Editor
         DrawGridEditingSection();
         EditorGUILayout.Space(10);
         DrawPassengersSection();
+        EditorGUILayout.Space(10);
+        DrawWallsSection();
+        EditorGUILayout.Space(10);
+        DrawTunnelsSection();
         EditorGUILayout.Space(10);
         DrawBusesSection();
         EditorGUILayout.Space(10);
@@ -56,15 +68,29 @@ public class LevelDataEditor : Editor
 
         if (gridEditMode)
         {
-            EditorGUILayout.HelpBox("Click on grid cells in Scene view to place/remove passengers", MessageType.Info);
+            EditorGUILayout.HelpBox("Left click in Scene view to place (if empty) or remove (in remove mode) objects", MessageType.Info);
 
-            selectedColor = (PassengerColor)EditorGUILayout.EnumPopup("Passenger Color", selectedColor);
+            selectedType = (ObjectType)EditorGUILayout.EnumPopup("Object Type", selectedType);
+            removeMode = EditorGUILayout.Toggle("Remove Mode", removeMode);
 
-            EditorGUILayout.LabelField("Traits:", EditorStyles.boldLabel);
-            for (int i = 0; i < availableTraits.Count; i++)
+            if (!removeMode)
             {
-                if (i < selectedTraits.Length)
-                    selectedTraits[i] = EditorGUILayout.Toggle(availableTraits[i], selectedTraits[i]);
+                if (selectedType != ObjectType.Wall)
+                {
+                    selectedColor = (PassengerColor)EditorGUILayout.EnumPopup("Color", selectedColor);
+
+                    EditorGUILayout.LabelField("Traits:", EditorStyles.boldLabel);
+                    for (int i = 0; i < availableTraits.Count; i++)
+                    {
+                        if (i < selectedTraits.Length)
+                            selectedTraits[i] = EditorGUILayout.Toggle(availableTraits[i], selectedTraits[i]);
+                    }
+
+                    if (selectedType == ObjectType.Tunnel)
+                    {
+                        selectedSpawnDirection = (SpawnDirection)EditorGUILayout.EnumPopup("Spawn Direction", selectedSpawnDirection);
+                    }
+                }
             }
         }
 
@@ -157,6 +183,161 @@ public class LevelDataEditor : Editor
         EditorGUILayout.EndVertical();
     }
 
+    private void DrawWallsSection()
+    {
+        EditorGUILayout.BeginVertical("box");
+
+        showWalls = EditorGUILayout.Foldout(showWalls, $"Walls ({levelData.walls.Count})", true);
+
+        if (showWalls)
+        {
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.MaxHeight(200));
+
+            for (int i = 0; i < levelData.walls.Count; i++)
+                DrawWallEntry(i);
+
+            EditorGUILayout.EndScrollView();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Add Wall"))
+            {
+                levelData.walls.Add(new WallData
+                {
+                    gridPosition = Vector2Int.zero
+                });
+            }
+
+            if (GUILayout.Button("Clear All Walls"))
+            {
+                if (EditorUtility.DisplayDialog("Clear Walls", "Are you sure you want to remove all walls?", "Yes", "Cancel"))
+                {
+                    levelData.walls.Clear();
+                    RefreshGameManager();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawWallEntry(int index)
+    {
+        WallData wall = levelData.walls[index];
+
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+
+        GUI.backgroundColor = Color.gray;
+        EditorGUILayout.LabelField("", EditorStyles.helpBox, GUILayout.Width(20), GUILayout.Height(20));
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.LabelField($"Wall {index}", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("X", GUILayout.Width(25)))
+        {
+            levelData.walls.RemoveAt(index);
+            RefreshGameManager();
+            return;
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        wall.gridPosition = EditorGUILayout.Vector2IntField("Grid Position", wall.gridPosition);
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawTunnelsSection()
+    {
+        EditorGUILayout.BeginVertical("box");
+
+        showTunnels = EditorGUILayout.Foldout(showTunnels, $"Tunnels ({levelData.tunnels.Count})", true);
+
+        if (showTunnels)
+        {
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.MaxHeight(200));
+
+            for (int i = 0; i < levelData.tunnels.Count; i++)
+                DrawTunnelEntry(i);
+
+            EditorGUILayout.EndScrollView();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Add Tunnel"))
+            {
+                levelData.tunnels.Add(new TunnelData
+                {
+                    gridPosition = Vector2Int.zero,
+                    direction = new Vector2Int(0, 1),
+                    spawnTemplate = new PassengerData { color = PassengerColor.Red, traitTypes = new List<string>() }
+                });
+            }
+
+            if (GUILayout.Button("Clear All Tunnels"))
+            {
+                if (EditorUtility.DisplayDialog("Clear Tunnels", "Are you sure you want to remove all tunnels?", "Yes", "Cancel"))
+                {
+                    levelData.tunnels.Clear();
+                    RefreshGameManager();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawTunnelEntry(int index)
+    {
+        TunnelData tunnel = levelData.tunnels[index];
+
+        if (tunnel.spawnTemplate == null)
+            tunnel.spawnTemplate = new PassengerData { color = PassengerColor.Red, traitTypes = new List<string>() };
+
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+
+        GUI.backgroundColor = Color.blue;
+        EditorGUILayout.LabelField("", EditorStyles.helpBox, GUILayout.Width(20), GUILayout.Height(20));
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.LabelField($"Tunnel {index}", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("X", GUILayout.Width(25)))
+        {
+            levelData.tunnels.RemoveAt(index);
+            RefreshGameManager();
+            return;
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        tunnel.gridPosition = EditorGUILayout.Vector2IntField("Grid Position", tunnel.gridPosition);
+        tunnel.direction = EditorGUILayout.Vector2IntField("Direction", tunnel.direction);
+        tunnel.spawnTemplate.color = (PassengerColor)EditorGUILayout.EnumPopup("Spawn Color", tunnel.spawnTemplate.color);
+
+        EditorGUILayout.LabelField("Spawn Traits:");
+        EditorGUI.indentLevel++;
+        for (int t = 0; t < tunnel.spawnTemplate.traitTypes.Count; t++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            tunnel.spawnTemplate.traitTypes[t] = EditorGUILayout.TextField(tunnel.spawnTemplate.traitTypes[t]);
+            if (GUILayout.Button("-", GUILayout.Width(25)))
+            {
+                tunnel.spawnTemplate.traitTypes.RemoveAt(t);
+                t--;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        if (GUILayout.Button("Add Trait"))
+            tunnel.spawnTemplate.traitTypes.Add("");
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.EndVertical();
+    }
+
     private void DrawBusesSection()
     {
         EditorGUILayout.BeginVertical("box");
@@ -237,7 +418,7 @@ public class LevelDataEditor : Editor
                 GridCell gridCell = hit.collider.GetComponent<GridCell>();
                 if (gridCell != null)
                 {
-                    TogglePassengerAtPosition(gridCell.gridPosition);
+                    HandleClickAtPosition(gridCell.gridPosition);
                     e.Use();
                 }
             }
@@ -251,35 +432,124 @@ public class LevelDataEditor : Editor
 
             Handles.color = GetColorFromEnum(passenger.color);
             Handles.DrawSolidDisc(worldPos + Vector3.up * 0.1f, Vector3.up, 0.3f);
-            Handles.color = Color.white;
+        }
+        foreach (var wall in levelData.walls)
+        {
+            Vector3 worldPos = new Vector3(wall.gridPosition.x, 0.1f, wall.gridPosition.y);
+            Handles.DrawWireCube(worldPos, Vector3.one * 0.8f);
+
+            Handles.color = Color.gray;
+            Handles.DrawSolidDisc(worldPos + Vector3.up * 0.1f, Vector3.up, 0.3f);
+        }
+        foreach (var tunnel in levelData.tunnels)
+        {
+            Vector3 worldPos = new Vector3(tunnel.gridPosition.x, 0.1f, tunnel.gridPosition.y);
+            Handles.DrawWireCube(worldPos, Vector3.one * 0.8f);
+
+            Handles.color = Color.blue;
+            Handles.DrawSolidDisc(worldPos + Vector3.up * 0.1f, Vector3.up, 0.3f);
+
+            Vector3 dirVec = new Vector3(tunnel.direction.x, 0, tunnel.direction.y) * 0.5f;
+            Handles.DrawLine(worldPos + Vector3.up * 0.1f, worldPos + Vector3.up * 0.1f + dirVec);
+        }
+        Handles.color = Color.white;
+    }
+
+    private void HandleClickAtPosition(Vector2Int gridPos)
+    {
+        if (removeMode)
+        {
+            RemoveAtPosition(gridPos);
+        }
+        else if (!HasAnyAtPosition(gridPos))
+        {
+            PlaceSelectedAtPosition(gridPos);
+        }
+        RefreshGameManager();
+        EditorUtility.SetDirty(levelData);
+    }
+
+    private bool HasAnyAtPosition(Vector2Int gridPos)
+    {
+        return levelData.passengers.Any(p => p.gridPosition == gridPos) ||
+               levelData.walls.Any(w => w.gridPosition == gridPos) ||
+               levelData.tunnels.Any(t => t.gridPosition == gridPos);
+    }
+
+    private void RemoveAtPosition(Vector2Int gridPos)
+    {
+        PassengerData passenger = levelData.passengers.FirstOrDefault(p => p.gridPosition == gridPos);
+        if (passenger != null)
+        {
+            levelData.passengers.Remove(passenger);
+            return;
+        }
+
+        WallData wall = levelData.walls.FirstOrDefault(w => w.gridPosition == gridPos);
+        if (wall != null)
+        {
+            levelData.walls.Remove(wall);
+            return;
+        }
+
+        TunnelData tunnel = levelData.tunnels.FirstOrDefault(t => t.gridPosition == gridPos);
+        if (tunnel != null)
+        {
+            levelData.tunnels.Remove(tunnel);
+            return;
         }
     }
 
-    private void TogglePassengerAtPosition(Vector2Int gridPos)
+    private void PlaceSelectedAtPosition(Vector2Int gridPos)
     {
-        PassengerData existingPassenger = levelData.passengers.FirstOrDefault(p => p.gridPosition == gridPos);
-
-        if (existingPassenger != null)
-            levelData.passengers.Remove(existingPassenger);
-        else
+        List<string> traitsToAdd = new List<string>();
+        for (int i = 0; i < selectedTraits.Length && i < availableTraits.Count; i++)
         {
-            List<string> traitsToAdd = new List<string>();
-            for (int i = 0; i < selectedTraits.Length && i < availableTraits.Count; i++)
-            {
-                if (selectedTraits[i])
-                    traitsToAdd.Add(availableTraits[i]);
-            }
-
-            levelData.passengers.Add(new PassengerData
-            {
-                gridPosition = gridPos,
-                color = selectedColor,
-                traitTypes = traitsToAdd
-            });
+            if (selectedTraits[i])
+                traitsToAdd.Add(availableTraits[i]);
         }
 
-        RefreshGameManager();
-        EditorUtility.SetDirty(levelData);
+        switch (selectedType)
+        {
+            case ObjectType.Passenger:
+                levelData.passengers.Add(new PassengerData
+                {
+                    gridPosition = gridPos,
+                    color = selectedColor,
+                    traitTypes = traitsToAdd
+                });
+                break;
+            case ObjectType.Wall:
+                levelData.walls.Add(new WallData
+                {
+                    gridPosition = gridPos
+                });
+                break;
+            case ObjectType.Tunnel:
+                levelData.tunnels.Add(new TunnelData
+                {
+                    gridPosition = gridPos,
+                    direction = GetDirectionVector(selectedSpawnDirection),
+                    spawnTemplate = new PassengerData
+                    {
+                        color = selectedColor,
+                        traitTypes = traitsToAdd
+                    }
+                });
+                break;
+        }
+    }
+
+    private Vector2Int GetDirectionVector(SpawnDirection d)
+    {
+        return d switch
+        {
+            SpawnDirection.Up => new Vector2Int(0, 1),
+            SpawnDirection.Down => new Vector2Int(0, -1),
+            SpawnDirection.Left => new Vector2Int(-1, 0),
+            SpawnDirection.Right => new Vector2Int(1, 0),
+            _ => new Vector2Int(0, 1)
+        };
     }
 }
 
@@ -289,7 +559,12 @@ public class GridLayoutWindow : EditorWindow
     private Vector2 scrollPos;
     private int gridWidth = 10;
     private int gridHeight = 10;
+    private ObjectType brushType = ObjectType.Passenger;
     private PassengerColor brushColor = PassengerColor.Red;
+    private SpawnDirection brushDirection = SpawnDirection.Up;
+
+    private enum ObjectType { Passenger, Wall, Tunnel }
+    private enum SpawnDirection { Up, Down, Left, Right }
 
     public static void ShowWindow(LevelData data)
     {
@@ -311,7 +586,12 @@ public class GridLayoutWindow : EditorWindow
         gridHeight = EditorGUILayout.IntField("Grid Height", gridHeight);
         EditorGUILayout.EndHorizontal();
 
-        brushColor = (PassengerColor)EditorGUILayout.EnumPopup("Brush Color", brushColor);
+        brushType = (ObjectType)EditorGUILayout.EnumPopup("Brush Type", brushType);
+
+        if (brushType != ObjectType.Wall)
+            brushColor = (PassengerColor)EditorGUILayout.EnumPopup("Brush Color", brushColor);
+        if (brushType == ObjectType.Tunnel)
+            brushDirection = (SpawnDirection)EditorGUILayout.EnumPopup("Brush Direction", brushDirection);
 
         EditorGUILayout.Space();
 
@@ -323,26 +603,16 @@ public class GridLayoutWindow : EditorWindow
             for (int x = 0; x < gridWidth; x++)
             {
                 Vector2Int gridPos = new Vector2Int(x, y);
-                PassengerData passenger = levelData.passengers.FirstOrDefault(p => p.gridPosition == gridPos);
-
-                Color buttonColor = passenger != null ? GetColorFromEnum(passenger.color) : Color.gray;
+                var obj = GetObjectAtPosition(gridPos);
+                Color buttonColor = obj.HasValue ? obj.Value.Item2 : Color.white;
                 GUI.backgroundColor = buttonColor;
 
                 if (GUILayout.Button("", GUILayout.Width(30), GUILayout.Height(30)))
                 {
-                    if (passenger != null)
-                    {
-                        levelData.passengers.Remove(passenger);
-                    }
+                    if (obj.HasValue)
+                        RemoveObjectAtPosition(gridPos, obj.Value.Item1);
                     else
-                    {
-                        levelData.passengers.Add(new PassengerData
-                        {
-                            gridPosition = gridPos,
-                            color = brushColor,
-                            traitTypes = new List<string>()
-                        });
-                    }
+                        PlaceBrushAtPosition(gridPos);
                     EditorUtility.SetDirty(levelData);
                 }
 
@@ -352,6 +622,90 @@ public class GridLayoutWindow : EditorWindow
         }
 
         EditorGUILayout.EndScrollView();
+    }
+
+    private (string, Color)? GetObjectAtPosition(Vector2Int gridPos)
+    {
+        PassengerData passenger = levelData.passengers.FirstOrDefault(p => p.gridPosition == gridPos);
+        if (passenger != null)
+            return ("Passenger", GetColorFromEnum(passenger.color));
+
+        WallData wall = levelData.walls.FirstOrDefault(w => w.gridPosition == gridPos);
+        if (wall != null)
+            return ("Wall", Color.gray);
+
+        TunnelData tunnel = levelData.tunnels.FirstOrDefault(t => t.gridPosition == gridPos);
+        if (tunnel != null)
+            return ("Tunnel", Color.blue);
+
+        return null;
+    }
+
+    private void RemoveObjectAtPosition(Vector2Int gridPos, string objType)
+    {
+        if (objType == "Passenger")
+        {
+            PassengerData passenger = levelData.passengers.FirstOrDefault(p => p.gridPosition == gridPos);
+            if (passenger != null)
+                levelData.passengers.Remove(passenger);
+        }
+        else if (objType == "Wall")
+        {
+            WallData wall = levelData.walls.FirstOrDefault(w => w.gridPosition == gridPos);
+            if (wall != null)
+                levelData.walls.Remove(wall);
+        }
+        else if (objType == "Tunnel")
+        {
+            TunnelData tunnel = levelData.tunnels.FirstOrDefault(t => t.gridPosition == gridPos);
+            if (tunnel != null)
+                levelData.tunnels.Remove(tunnel);
+        }
+    }
+
+    private void PlaceBrushAtPosition(Vector2Int gridPos)
+    {
+        switch (brushType)
+        {
+            case ObjectType.Passenger:
+                levelData.passengers.Add(new PassengerData
+                {
+                    gridPosition = gridPos,
+                    color = brushColor,
+                    traitTypes = new List<string>()
+                });
+                break;
+            case ObjectType.Wall:
+                levelData.walls.Add(new WallData
+                {
+                    gridPosition = gridPos
+                });
+                break;
+            case ObjectType.Tunnel:
+                levelData.tunnels.Add(new TunnelData
+                {
+                    gridPosition = gridPos,
+                    direction = GetDirectionVector(brushDirection),
+                    spawnTemplate = new PassengerData
+                    {
+                        color = brushColor,
+                        traitTypes = new List<string>()
+                    }
+                });
+                break;
+        }
+    }
+
+    private Vector2Int GetDirectionVector(SpawnDirection d)
+    {
+        return d switch
+        {
+            SpawnDirection.Up => new Vector2Int(0, 1),
+            SpawnDirection.Down => new Vector2Int(0, -1),
+            SpawnDirection.Left => new Vector2Int(-1, 0),
+            SpawnDirection.Right => new Vector2Int(1, 0),
+            _ => new Vector2Int(0, 1)
+        };
     }
 
     private Color GetColorFromEnum(PassengerColor passengerColor)

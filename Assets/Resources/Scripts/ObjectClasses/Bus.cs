@@ -18,7 +18,7 @@ public class Bus : MonoBehaviour
 
         Passengers.Add(passenger);
         passenger.transform.SetParent(transform);
-        GameManager.Instance.RemovePassengerFromGrid(passenger.GridPosition);
+        GameManager.Instance.RemoveOccupantFromGrid(passenger.Position);
 
         Vector3 boardingPosition = transform.position + new Vector3(0, 0, 2f);
         MovementManager.Instance.MoveGradual(passenger.gameObject, boardingPosition, 5f, () =>

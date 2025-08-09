@@ -25,7 +25,7 @@ public class CloakedTrait : PassengerTrait
     {
         if (owner == null)
             return;
-        if(clickedPosition != owner.GridPosition)
+        if(clickedPosition != owner.Position)
             ToggleCloak();
     }
 

@@ -1,7 +1,6 @@
-
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 public class AStarPathfinder
 {
@@ -132,7 +131,7 @@ public class AStarPathfinder
         if (!IsValidPosition(position))
             return false;
 
-        return !gameManager.HasPassengerAt(position);
+        return !gameManager.HasOccupantAt(position) || (gameManager.gridObjects.TryGetValue(position, out var obj) && !obj.BlocksPath);
     }
 
     private float GetDistance(Vector2Int a, Vector2Int b)

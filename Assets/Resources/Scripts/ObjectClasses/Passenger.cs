@@ -1,28 +1,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Passenger : MonoBehaviour
+public class Passenger : MapObject
 {
     public PassengerColor Color { get; set; }
-    public Vector2Int GridPosition { get; set; }
     public List<PassengerTrait> traits = new List<PassengerTrait>();
     public List<Renderer> bodyRenderers = new List<Renderer>();
     private Collider _collider;
     private bool _isInteractable = false;
     public bool IsInteractable => _isInteractable;
-
     private void Awake()
     {
         _collider = GetComponent<Collider>();
         if (bodyRenderers.Count == 0)
             bodyRenderers.AddRange(GetComponentsInChildren<Renderer>());
     }
-
     void Update()
     {
         if (!_isInteractable)
             return;
-
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -38,7 +34,6 @@ public class Passenger : MonoBehaviour
             }
         }
     }
-
     public void RemoveTrait(PassengerTrait trait)
     {
         if (traits.Remove(trait))
@@ -47,22 +42,17 @@ public class Passenger : MonoBehaviour
             PassengerEvents.TriggerPassengerTraitsChanged(this);
         }
     }
-
     public bool CanBoardBus(Bus bus)
     {
         if (Color != bus.Color)
             return false;
-
         if (!CanTraitMove(bus))
             return false;
-
         foreach (BusTrait trait in bus.traits)
             if (!trait.CanAcceptPassenger(bus, this))
                 return false;
-
         return true;
     }
-
     public bool CanTraitMove(Bus bus)
     {
         foreach (PassengerTrait trait in traits)
@@ -70,7 +60,6 @@ public class Passenger : MonoBehaviour
                 return false;
         return true;
     }
-
     public void SetColor(PassengerColor color)
     {
         Color = color;
@@ -83,16 +72,18 @@ public class Passenger : MonoBehaviour
             PassengerColor.Purple => new Color(0.5f, 0f, 1f),
             _ => UnityEngine.Color.white
         };
-
         foreach (var renderer in bodyRenderers)
             if (renderer != null)
                 renderer.material.color = renderColor;
     }
-
     public void SetInteractable(bool isInteractable)
     {
         _isInteractable = isInteractable;
         if (_collider != null)
             _collider.enabled = isInteractable;
+    }
+    public override void OnReachedByFlood()
+    {
+        SetInteractable(true);
     }
 }

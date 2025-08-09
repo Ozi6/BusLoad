@@ -22,11 +22,11 @@ public class RopedTrait : PassengerTrait
 
         foreach (Vector2Int offset in neighbors)
         {
-            Vector2Int checkPos = owner.GridPosition + offset;
+            Vector2Int checkPos = owner.Position + offset;
             if (checkPos.x >= 0 && checkPos.x < GameManager.Instance.GetGridBounds().x &&
                 checkPos.y >= 0 && checkPos.y < GameManager.Instance.GetGridBounds().y)
             {
-                if (GameManager.Instance.gridPassengers.ContainsKey(checkPos))
+                if (GameManager.Instance.gridObjects.ContainsKey(checkPos))
                     initialNeighborPositions.Add(checkPos);
             }
         }
@@ -45,13 +45,13 @@ public class RopedTrait : PassengerTrait
 
     private void CheckUntie(Vector2Int clickedPosition)
     {
-        if (Vector2Int.Distance(owner.GridPosition, clickedPosition) > 2f)
+        if (Vector2Int.Distance(owner.Position, clickedPosition) > 2f)
             return;
 
         int missingNeighborCount = 0;
         foreach (Vector2Int pos in initialNeighborPositions)
         {
-            if (!GameManager.Instance.gridPassengers.ContainsKey(pos))
+            if (!GameManager.Instance.gridObjects.ContainsKey(pos))
                 missingNeighborCount++;
         }
 
