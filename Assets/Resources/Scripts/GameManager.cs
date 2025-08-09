@@ -102,11 +102,22 @@ public class GameManager : MonoBehaviour
             if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
                 data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
                 continue;
+
             GameObject tunnelObj = Instantiate(tunnelPrefab, gridParent);
             Tunnel tunnel = tunnelObj.GetComponent<Tunnel>();
             tunnel.Position = data.gridPosition;
             tunnel.SpawnDirection = data.direction;
-            tunnel.SpawnTemplate = data.spawnTemplate;
+
+            tunnel.PassengerQueue = new List<PassengerData>();
+            foreach (var passengerData in data.passengerQueue)
+            {
+                tunnel.PassengerQueue.Add(new PassengerData
+                {
+                    color = passengerData.color,
+                    traitTypes = new List<string>(passengerData.traitTypes)
+                });
+            }
+
             Vector3 worldPos = new Vector3(
                 gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
                 0.5f,
@@ -141,14 +152,19 @@ public class GameManager : MonoBehaviour
             Vector2Int tunnelPos = emptyPos - dir;
             if (gridObjects.TryGetValue(tunnelPos, out var obj) && obj is Tunnel tunnel && tunnel.SpawnDirection == dir)
             {
-                PassengerData template = tunnel.SpawnTemplate;
-                if (template == null) continue;
+                if (!tunnel.HasPassengersLeft)
+                    continue;
+
+                PassengerData template = tunnel.GetNextPassenger();
+                if (template == null)
+                    continue;
 
                 GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
                 Passenger passenger = passengerObj.GetComponent<Passenger>();
                 passenger.SetColor(template.color);
                 passenger.Position = emptyPos;
                 passenger.SetInteractable(false);
+
                 foreach (string traitType in template.traitTypes)
                 {
                     System.Type type = System.Type.GetType(traitType);
@@ -158,6 +174,7 @@ public class GameManager : MonoBehaviour
                         passenger.traits.Add(trait);
                     }
                 }
+
                 Vector3 worldPos = new Vector3(
                     gridParent.transform.position.x + emptyPos.x * GRID_SPACING,
                     0.5f,

@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
@@ -256,7 +256,7 @@ public class LevelDataEditor : Editor
 
         if (showTunnels)
         {
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.MaxHeight(200));
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.MaxHeight(300));
 
             for (int i = 0; i < levelData.tunnels.Count; i++)
                 DrawTunnelEntry(i);
@@ -270,7 +270,7 @@ public class LevelDataEditor : Editor
                 {
                     gridPosition = Vector2Int.zero,
                     direction = new Vector2Int(0, 1),
-                    spawnTemplate = new PassengerData { color = PassengerColor.Red, traitTypes = new List<string>() }
+                    passengerQueue = new List<PassengerData>()
                 });
             }
 
@@ -292,8 +292,8 @@ public class LevelDataEditor : Editor
     {
         TunnelData tunnel = levelData.tunnels[index];
 
-        if (tunnel.spawnTemplate == null)
-            tunnel.spawnTemplate = new PassengerData { color = PassengerColor.Red, traitTypes = new List<string>() };
+        if (tunnel.passengerQueue == null)
+            tunnel.passengerQueue = new List<PassengerData>();
 
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
@@ -315,26 +315,84 @@ public class LevelDataEditor : Editor
 
         tunnel.gridPosition = EditorGUILayout.Vector2IntField("Grid Position", tunnel.gridPosition);
         tunnel.direction = EditorGUILayout.Vector2IntField("Direction", tunnel.direction);
-        tunnel.spawnTemplate.color = (PassengerColor)EditorGUILayout.EnumPopup("Spawn Color", tunnel.spawnTemplate.color);
 
-        EditorGUILayout.LabelField("Spawn Traits:");
+        EditorGUILayout.Space(5);
+        EditorGUILayout.LabelField($"Passenger Queue ({tunnel.passengerQueue.Count} passengers):", EditorStyles.boldLabel);
+
         EditorGUI.indentLevel++;
-        for (int t = 0; t < tunnel.spawnTemplate.traitTypes.Count; t++)
+        for (int p = 0; p < tunnel.passengerQueue.Count; p++)
         {
+            EditorGUILayout.BeginVertical("box");
             EditorGUILayout.BeginHorizontal();
-            tunnel.spawnTemplate.traitTypes[t] = EditorGUILayout.TextField(tunnel.spawnTemplate.traitTypes[t]);
-            if (GUILayout.Button("-", GUILayout.Width(25)))
+
+            GUI.backgroundColor = GetColorFromEnum(tunnel.passengerQueue[p].color);
+            EditorGUILayout.LabelField("", EditorStyles.helpBox, GUILayout.Width(15), GUILayout.Height(15));
+            GUI.backgroundColor = Color.white;
+
+            EditorGUILayout.LabelField($"Passenger {p + 1}", EditorStyles.miniLabel);
+
+            if (GUILayout.Button("▲", GUILayout.Width(20)) && p > 0)
             {
-                tunnel.spawnTemplate.traitTypes.RemoveAt(t);
-                t--;
+                PassengerData temp = tunnel.passengerQueue[p];
+                tunnel.passengerQueue[p] = tunnel.passengerQueue[p - 1];
+                tunnel.passengerQueue[p - 1] = temp;
+                EditorUtility.SetDirty(levelData);
             }
+
+            if (GUILayout.Button("▼", GUILayout.Width(20)) && p < tunnel.passengerQueue.Count - 1)
+            {
+                PassengerData temp = tunnel.passengerQueue[p];
+                tunnel.passengerQueue[p] = tunnel.passengerQueue[p + 1];
+                tunnel.passengerQueue[p + 1] = temp;
+                EditorUtility.SetDirty(levelData);
+            }
+
+            if (GUILayout.Button("X", GUILayout.Width(20)))
+            {
+                tunnel.passengerQueue.RemoveAt(p);
+                EditorUtility.SetDirty(levelData);
+                p--;
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+                continue;
+            }
+
             EditorGUILayout.EndHorizontal();
+
+            tunnel.passengerQueue[p].color = (PassengerColor)EditorGUILayout.EnumPopup("Color", tunnel.passengerQueue[p].color);
+
+            EditorGUILayout.LabelField("Traits:", EditorStyles.miniLabel);
+            EditorGUI.indentLevel++;
+            for (int t = 0; t < tunnel.passengerQueue[p].traitTypes.Count; t++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                tunnel.passengerQueue[p].traitTypes[t] = EditorGUILayout.TextField(tunnel.passengerQueue[p].traitTypes[t]);
+                if (GUILayout.Button("-", GUILayout.Width(20)))
+                {
+                    tunnel.passengerQueue[p].traitTypes.RemoveAt(t);
+                    t--;
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (GUILayout.Button("Add Trait", GUILayout.Height(16)))
+                tunnel.passengerQueue[p].traitTypes.Add("");
+
+            EditorGUI.indentLevel--;
+            EditorGUILayout.EndVertical();
+        }
+        EditorGUI.indentLevel--;
+
+        if (GUILayout.Button("Add Passenger to Queue"))
+        {
+            tunnel.passengerQueue.Add(new PassengerData
+            {
+                color = PassengerColor.Red,
+                traitTypes = new List<string>()
+            });
+            EditorUtility.SetDirty(levelData);
         }
 
-        if (GUILayout.Button("Add Trait"))
-            tunnel.spawnTemplate.traitTypes.Add("");
-
-        EditorGUI.indentLevel--;
         EditorGUILayout.EndVertical();
     }
 
@@ -458,13 +516,9 @@ public class LevelDataEditor : Editor
     private void HandleClickAtPosition(Vector2Int gridPos)
     {
         if (removeMode)
-        {
             RemoveAtPosition(gridPos);
-        }
         else if (!HasAnyAtPosition(gridPos))
-        {
             PlaceSelectedAtPosition(gridPos);
-        }
         RefreshGameManager();
         EditorUtility.SetDirty(levelData);
     }
@@ -526,15 +580,20 @@ public class LevelDataEditor : Editor
                 });
                 break;
             case ObjectType.Tunnel:
+                List<PassengerData> initialQueue = new List<PassengerData>
+            {
+                new PassengerData
+                {
+                    color = selectedColor,
+                    traitTypes = traitsToAdd
+                }
+            };
+
                 levelData.tunnels.Add(new TunnelData
                 {
                     gridPosition = gridPos,
                     direction = GetDirectionVector(selectedSpawnDirection),
-                    spawnTemplate = new PassengerData
-                    {
-                        color = selectedColor,
-                        traitTypes = traitsToAdd
-                    }
+                    passengerQueue = initialQueue
                 });
                 break;
         }
@@ -682,15 +741,20 @@ public class GridLayoutWindow : EditorWindow
                 });
                 break;
             case ObjectType.Tunnel:
+                List<PassengerData> initialQueue = new List<PassengerData>
+            {
+                new PassengerData
+                {
+                    color = brushColor,
+                    traitTypes = new List<string>()
+                }
+            };
+
                 levelData.tunnels.Add(new TunnelData
                 {
                     gridPosition = gridPos,
                     direction = GetDirectionVector(brushDirection),
-                    spawnTemplate = new PassengerData
-                    {
-                        color = brushColor,
-                        traitTypes = new List<string>()
-                    }
+                    passengerQueue = initialQueue
                 });
                 break;
         }

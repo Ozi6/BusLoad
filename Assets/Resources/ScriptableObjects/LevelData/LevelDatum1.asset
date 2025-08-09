@@ -13,20 +13,11 @@ MonoBehaviour:
   m_Name: LevelDatum1
   m_EditorClassIdentifier: 
   passengers:
-  - color: 0
-    gridPosition: {x: 0, y: 0}
-    traitTypes: []
   - color: 1
     gridPosition: {x: 0, y: 1}
     traitTypes: []
-  - color: 2
-    gridPosition: {x: 0, y: 2}
-    traitTypes: []
   - color: 0
     gridPosition: {x: 1, y: 0}
-    traitTypes: []
-  - color: 1
-    gridPosition: {x: 1, y: 1}
     traitTypes: []
   - color: 2
     gridPosition: {x: 1, y: 2}
@@ -46,11 +37,25 @@ MonoBehaviour:
   - gridPosition: {x: 0, y: 5}
   - gridPosition: {x: 1, y: 5}
   - gridPosition: {x: 2, y: 5}
+  - gridPosition: {x: 3, y: 5}
+  - gridPosition: {x: 4, y: 5}
+  - gridPosition: {x: 5, y: 5}
+  - gridPosition: {x: 5, y: 3}
+  - gridPosition: {x: 5, y: 2}
+  - gridPosition: {x: 5, y: 1}
+  - gridPosition: {x: 5, y: 0}
+  - gridPosition: {x: 3, y: 0}
   tunnels:
-  - gridPosition: {x: 8, y: 8}
+  - gridPosition: {x: 0, y: 0}
     direction: {x: 0, y: 1}
-    spawnTemplate:
-      color: 0
+    passengerQueue:
+    - color: 0
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+    - color: 2
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+    - color: 1
       gridPosition: {x: 0, y: 0}
       traitTypes: []
   buses:
