@@ -5,11 +5,14 @@ public class RopedTrait : PassengerTrait
 {
     private Passenger owner;
     private List<Vector2Int> initialNeighborPositions = new List<Vector2Int>();
+    private int ropeCount = 2;
 
     private void Start()
     {
         owner = GetComponent<Passenger>();
         InitializeNeighborPositions();
+        ropeCount = Mathf.Min(initialNeighborPositions.Count, 3);
+        UpdateVisualIndicator();
     }
 
     private void InitializeNeighborPositions()
@@ -19,7 +22,6 @@ public class RopedTrait : PassengerTrait
             new Vector2Int(-1, 0), new Vector2Int(1, 0),
             new Vector2Int(-1, 1), new Vector2Int(0, 1), new Vector2Int(1, 1)
         };
-
         foreach (Vector2Int offset in neighbors)
         {
             Vector2Int checkPos = owner.Position + offset;
@@ -33,7 +35,6 @@ public class RopedTrait : PassengerTrait
     }
 
     public override void OnSelected(Passenger passenger) { }
-
     public override bool CanBoard(Passenger passenger, Bus bus) => false;
 
     protected override void OnNearbyPassengerSelected(Vector2Int clickedPosition)
@@ -50,12 +51,19 @@ public class RopedTrait : PassengerTrait
 
         int missingNeighborCount = 0;
         foreach (Vector2Int pos in initialNeighborPositions)
-        {
             if (!GameManager.Instance.gridObjects.ContainsKey(pos))
                 missingNeighborCount++;
-        }
 
-        if (missingNeighborCount >= 2)
-            owner.RemoveTrait(this);
+        int newRopeCount = Mathf.Max(0, ropeCount - missingNeighborCount);
+        if (newRopeCount != ropeCount)
+        {
+            ropeCount = newRopeCount;
+            UpdateVisualIndicator();
+
+            if (ropeCount <= 0)
+                owner.RemoveTrait(this);
+        }
     }
+
+    public int GetRopeCount() => ropeCount;
 }

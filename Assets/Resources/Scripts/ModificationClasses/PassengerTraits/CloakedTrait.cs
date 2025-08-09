@@ -26,13 +26,14 @@ public class CloakedTrait : PassengerTrait
     {
         if (owner == null)
             return;
-        if(clickedPosition != owner.Position)
+        if (clickedPosition != owner.Position)
             ToggleCloak();
     }
 
     private void ToggleCloak()
     {
         isCloaked = !isCloaked;
+        UpdateVisualIndicator();
     }
 
     public bool IsCloaked => isCloaked;
