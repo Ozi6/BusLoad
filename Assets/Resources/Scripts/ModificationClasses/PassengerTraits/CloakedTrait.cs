@@ -10,6 +10,12 @@ public class CloakedTrait : PassengerTrait
         owner = GetComponent<Passenger>();
     }
 
+    public void Configure(TraitConfiguration config)
+    {
+        if (config.traitType.Equals("CloakedTrait"))
+            isCloaked = config.boolValue;
+    }
+
     public override void OnSelected(Passenger passenger)
     {
         if (isCloaked)
@@ -26,8 +32,7 @@ public class CloakedTrait : PassengerTrait
     {
         if (owner == null)
             return;
-        if (clickedPosition != owner.Position)
-            ToggleCloak();
+        if (clickedPosition != owner.Position) ToggleCloak();
     }
 
     private void ToggleCloak()

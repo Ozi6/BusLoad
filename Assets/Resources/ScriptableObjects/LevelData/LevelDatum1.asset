@@ -17,23 +17,41 @@ MonoBehaviour:
     gridPosition: {x: 0, y: 1}
     traitTypes:
     - BombedTrait
+    traitConfigs:
+    - traitType: BombedTrait
+      intValue: 3
+      boolValue: 0
+      floatValue: 0
   - color: 0
     gridPosition: {x: 1, y: 0}
     traitTypes: []
+    traitConfigs: []
   - color: 2
     gridPosition: {x: 1, y: 2}
     traitTypes:
     - CloakedTrait
+    traitConfigs:
+    - traitType: CloakedTrait
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
   - color: 0
     gridPosition: {x: 2, y: 0}
     traitTypes: []
+    traitConfigs: []
   - color: 1
     gridPosition: {x: 2, y: 1}
     traitTypes: []
+    traitConfigs: []
   - color: 2
     gridPosition: {x: 2, y: 2}
     traitTypes:
     - RopedTrait
+    traitConfigs:
+    - traitType: RopedTrait
+      intValue: 3
+      boolValue: 0
+      floatValue: 0
   walls:
   - gridPosition: {x: 0, y: 5}
   - gridPosition: {x: 1, y: 5}
@@ -53,12 +71,15 @@ MonoBehaviour:
     - color: 0
       gridPosition: {x: 0, y: 0}
       traitTypes: []
+      traitConfigs: []
     - color: 2
       gridPosition: {x: 0, y: 0}
       traitTypes: []
+      traitConfigs: []
     - color: 1
       gridPosition: {x: 0, y: 0}
       traitTypes: []
+      traitConfigs: []
   buses:
   - color: 0
     traitTypes: []

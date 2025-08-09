@@ -15,6 +15,10 @@ public class LevelDataEditor : Editor
     private bool showTunnels = true;
     private bool showBuses = true;
 
+    private int gridEditBombCountdown = 5;
+    private bool gridEditCloakInitial = true;
+    private int gridEditRopeLength = 3;
+
     private bool gridEditMode = false;
     private ObjectType selectedType = ObjectType.Passenger;
     private bool removeMode = false;
@@ -29,7 +33,7 @@ public class LevelDataEditor : Editor
     private void OnEnable()
     {
         levelData = (LevelData)target;
-        availableTraits = new List<string> { "RopedTrait" };
+        availableTraits = new List<string> { "RopedTrait", "BombedTrait", "CloakedTrait" };
         selectedTraits = new bool[availableTraits.Count];
     }
 
@@ -81,15 +85,14 @@ public class LevelDataEditor : Editor
 
                     EditorGUILayout.LabelField("Traits:", EditorStyles.boldLabel);
                     for (int i = 0; i < availableTraits.Count; i++)
-                    {
                         if (i < selectedTraits.Length)
                             selectedTraits[i] = EditorGUILayout.Toggle(availableTraits[i], selectedTraits[i]);
-                    }
+
+                    EditorGUILayout.LabelField("Trait Configuration:", EditorStyles.boldLabel);
+                    DrawGridEditTraitConfigs();
 
                     if (selectedType == ObjectType.Tunnel)
-                    {
                         selectedSpawnDirection = (SpawnDirection)EditorGUILayout.EnumPopup("Spawn Direction", selectedSpawnDirection);
-                    }
                 }
             }
         }
@@ -171,9 +174,13 @@ public class LevelDataEditor : Editor
             if (GUILayout.Button("-", GUILayout.Width(25)))
             {
                 passenger.traitTypes.RemoveAt(t);
+                var configToRemove = passenger.traitConfigs.FirstOrDefault(c => c.traitType == passenger.traitTypes[t]);
+                if (configToRemove != null)
+                    passenger.traitConfigs.Remove(configToRemove);
                 t--;
             }
             EditorGUILayout.EndHorizontal();
+            DrawTraitConfiguration(passenger, passenger.traitTypes[t]);
         }
 
         if (GUILayout.Button("Add Trait"))
@@ -181,6 +188,50 @@ public class LevelDataEditor : Editor
 
         EditorGUI.indentLevel--;
         EditorGUILayout.EndVertical();
+    }
+
+    private void DrawTraitConfiguration(PassengerData passenger, string traitType)
+    {
+        if (string.IsNullOrEmpty(traitType))
+            return;
+
+        var config = passenger.traitConfigs.FirstOrDefault(c => c.traitType == traitType);
+        if (config == null)
+        {
+            config = new TraitConfiguration { traitType = traitType };
+            passenger.traitConfigs.Add(config);
+        }
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.BeginVertical("box");
+
+        switch (traitType)
+        {
+            case "BombedTrait":
+                EditorGUILayout.LabelField("Bomb Configuration:", EditorStyles.miniLabel);
+                config.intValue = EditorGUILayout.IntField("Initial Countdown", config.intValue == 0 ? 5 : config.intValue);
+                break;
+
+            case "CloakedTrait":
+                EditorGUILayout.LabelField("Cloak Configuration:", EditorStyles.miniLabel);
+                config.boolValue = EditorGUILayout.Toggle("Initially Cloaked", config.boolValue);
+                break;
+
+            case "RopedTrait":
+                EditorGUILayout.LabelField("Rope Configuration:", EditorStyles.miniLabel);
+                config.intValue = EditorGUILayout.IntField("Rope Length", config.intValue == 0 ? 3 : config.intValue);
+                break;
+
+            default:
+                EditorGUILayout.LabelField("Generic Configuration:", EditorStyles.miniLabel);
+                config.intValue = EditorGUILayout.IntField("Int Value", config.intValue);
+                config.boolValue = EditorGUILayout.Toggle("Bool Value", config.boolValue);
+                config.floatValue = EditorGUILayout.FloatField("Float Value", config.floatValue);
+                break;
+        }
+
+        EditorGUILayout.EndVertical();
+        EditorGUI.indentLevel--;
     }
 
     private void DrawWallsSection()
@@ -557,10 +608,30 @@ public class LevelDataEditor : Editor
     private void PlaceSelectedAtPosition(Vector2Int gridPos)
     {
         List<string> traitsToAdd = new List<string>();
+        List<TraitConfiguration> configsToAdd = new List<TraitConfiguration>();
+
         for (int i = 0; i < selectedTraits.Length && i < availableTraits.Count; i++)
         {
             if (selectedTraits[i])
-                traitsToAdd.Add(availableTraits[i]);
+            {
+                string trait = availableTraits[i];
+                traitsToAdd.Add(trait);
+
+                TraitConfiguration config = new TraitConfiguration { traitType = trait };
+                switch (trait)
+                {
+                    case "BombedTrait":
+                        config.intValue = gridEditBombCountdown;
+                        break;
+                    case "CloakedTrait":
+                        config.boolValue = gridEditCloakInitial;
+                        break;
+                    case "RopedTrait":
+                        config.intValue = gridEditRopeLength;
+                        break;
+                }
+                configsToAdd.Add(config);
+            }
         }
 
         switch (selectedType)
@@ -570,7 +641,8 @@ public class LevelDataEditor : Editor
                 {
                     gridPosition = gridPos,
                     color = selectedColor,
-                    traitTypes = traitsToAdd
+                    traitTypes = traitsToAdd,
+                    traitConfigs = configsToAdd
                 });
                 break;
             case ObjectType.Wall:
@@ -585,7 +657,8 @@ public class LevelDataEditor : Editor
                 new PassengerData
                 {
                     color = selectedColor,
-                    traitTypes = traitsToAdd
+                    traitTypes = traitsToAdd,
+                    traitConfigs = configsToAdd
                 }
             };
 
@@ -609,6 +682,29 @@ public class LevelDataEditor : Editor
             SpawnDirection.Right => new Vector2Int(1, 0),
             _ => new Vector2Int(0, 1)
         };
+    }
+
+    private void DrawGridEditTraitConfigs()
+    {
+        for (int i = 0; i < selectedTraits.Length && i < availableTraits.Count; i++)
+        {
+            if (selectedTraits[i])
+            {
+                string trait = availableTraits[i];
+                switch (trait)
+                {
+                    case "BombedTrait":
+                        gridEditBombCountdown = EditorGUILayout.IntField("Bomb Countdown", gridEditBombCountdown);
+                        break;
+                    case "CloakedTrait":
+                        gridEditCloakInitial = EditorGUILayout.Toggle("Initially Cloaked", gridEditCloakInitial);
+                        break;
+                    case "RopedTrait":
+                        gridEditRopeLength = EditorGUILayout.IntField("Rope Length", gridEditRopeLength);
+                        break;
+                }
+            }
+        }
     }
 }
 

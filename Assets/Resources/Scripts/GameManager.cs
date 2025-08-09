@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -95,6 +96,14 @@ public class GameManager : MonoBehaviour
             {
                 PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
                 passenger.traits.Add(trait);
+
+                var config = data.traitConfigs.FirstOrDefault(c => c.traitType == traitType);
+                if (config != null)
+                {
+                    var configMethod = trait.GetType().GetMethod("Configure");
+                    if (configMethod != null)
+                        configMethod.Invoke(trait, new object[] { config });
+                }
             }
         }
 

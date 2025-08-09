@@ -3,7 +3,6 @@ using UnityEngine;
 public class BombedTrait : PassengerTrait
 {
     [SerializeField] private int initialCountdown = 5;
-
     private Passenger owner;
     private int currentCountdown;
     private bool isActivated = false;
@@ -13,6 +12,15 @@ public class BombedTrait : PassengerTrait
     {
         owner = GetComponent<Passenger>();
         currentCountdown = initialCountdown;
+    }
+
+    public void Configure(TraitConfiguration config)
+    {
+        if (config.traitType == "BombedTrait")
+        {
+            initialCountdown = config.intValue;
+            currentCountdown = initialCountdown;
+        }
     }
 
     public override void OnSelected(Passenger passenger)
@@ -29,13 +37,9 @@ public class BombedTrait : PassengerTrait
 
     protected override void OnNearbyPassengerSelected(Vector2Int clickedPosition)
     {
-        if (owner == null || isExploded)
-            return;
-
-        if (isActivated)
-            DecrementCountdown();
-        else if (IsNeighboring(owner.Position, clickedPosition))
-            ActivateBomb();
+        if (owner == null || isExploded) return;
+        if (isActivated) DecrementCountdown();
+        else if (IsNeighboring(owner.Position, clickedPosition)) ActivateBomb();
     }
 
     private bool IsNeighboring(Vector2Int pos1, Vector2Int pos2)
@@ -55,7 +59,6 @@ public class BombedTrait : PassengerTrait
     {
         currentCountdown--;
         UpdateVisualIndicator();
-
         if (currentCountdown <= 0)
             ExplodeBomb();
     }
@@ -65,14 +68,10 @@ public class BombedTrait : PassengerTrait
         isExploded = true;
         isActivated = false;
         UpdateVisualIndicator();
-
         OnBombExploded();
     }
 
-    protected virtual void OnBombExploded()
-    {
-
-    }
+    protected virtual void OnBombExploded() { }
 
     public int GetCurrentCountdown() => currentCountdown;
     public bool IsActivated() => isActivated;
