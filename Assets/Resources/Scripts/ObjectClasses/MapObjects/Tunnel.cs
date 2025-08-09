@@ -9,6 +9,20 @@ public class Tunnel : MapObject
 
     public bool HasPassengersLeft => CurrentSpawnIndex < PassengerQueue.Count;
 
+    public PassengerData PeekNextPassenger()
+    {
+        if (!HasPassengersLeft)
+            return null;
+
+        return PassengerQueue[CurrentSpawnIndex];
+    }
+
+    public void ConsumeNextPassenger()
+    {
+        if (HasPassengersLeft)
+            CurrentSpawnIndex++;
+    }
+
     public PassengerData GetNextPassenger()
     {
         if (!HasPassengersLeft)

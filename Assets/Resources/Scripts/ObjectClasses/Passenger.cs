@@ -9,12 +9,14 @@ public class Passenger : MapObject
     private Collider _collider;
     private bool _isInteractable = false;
     public bool IsInteractable => _isInteractable;
+
     private void Awake()
     {
         _collider = GetComponent<Collider>();
         if (bodyRenderers.Count == 0)
             bodyRenderers.AddRange(GetComponentsInChildren<Renderer>());
     }
+
     void Update()
     {
         if (!_isInteractable)
@@ -27,13 +29,14 @@ public class Passenger : MapObject
                 Passenger passenger = hit.collider.GetComponentInParent<Passenger>();
                 if (passenger == this)
                 {
-                    foreach (PassengerTrait trait in passenger.traits)
-                        trait.OnSelected(passenger);
+                    for (int i = passenger.traits.Count - 1; i >= 0; i--)
+                        passenger.traits[i].OnSelected(passenger);
                     PassengerController.Instance.SelectPassenger(passenger);
                 }
             }
         }
     }
+
     public void RemoveTrait(PassengerTrait trait)
     {
         if (traits.Remove(trait))
@@ -42,6 +45,7 @@ public class Passenger : MapObject
             PassengerEvents.TriggerPassengerTraitsChanged(this);
         }
     }
+
     public bool CanBoardBus(Bus bus)
     {
         if (Color != bus.Color)
@@ -53,6 +57,7 @@ public class Passenger : MapObject
                 return false;
         return true;
     }
+
     public bool CanTraitMove(Bus bus)
     {
         foreach (PassengerTrait trait in traits)
@@ -60,6 +65,7 @@ public class Passenger : MapObject
                 return false;
         return true;
     }
+
     public void SetColor(PassengerColor color)
     {
         Color = color;
@@ -76,12 +82,14 @@ public class Passenger : MapObject
             if (renderer != null)
                 renderer.material.color = renderColor;
     }
+
     public void SetInteractable(bool isInteractable)
     {
         _isInteractable = isInteractable;
         if (_collider != null)
             _collider.enabled = isInteractable;
     }
+
     public override void OnReachedByFlood()
     {
         SetInteractable(true);

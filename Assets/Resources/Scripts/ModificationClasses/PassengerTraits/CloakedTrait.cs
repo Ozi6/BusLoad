@@ -14,6 +14,7 @@ public class CloakedTrait : PassengerTrait
     {
         if (isCloaked)
             return;
+        passenger.RemoveTrait(this);
     }
 
     public override bool CanBoard(Passenger passenger, Bus bus)

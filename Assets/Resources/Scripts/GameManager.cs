@@ -13,12 +13,15 @@ public class GameManager : MonoBehaviour
     public Dictionary<Vector2Int, MapObject> gridObjects = new Dictionary<Vector2Int, MapObject>();
     private const int GRID_SIZE = 12;
     private const float GRID_SPACING = 2f;
+
     private void Awake() => Instance = this;
+
     private void Start()
     {
         InitializeGrid();
         Invoke(nameof(SpawnGridObjects), 0.1f);
     }
+
     private void InitializeGrid()
     {
         if (gridSquarePrefab == null)
@@ -36,17 +39,21 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
     public bool HasOccupantAt(Vector2Int position) => gridObjects.ContainsKey(position);
+
     public bool HasPassengerAt(Vector2Int position) => gridObjects.TryGetValue(position, out var obj) && obj is Passenger;
+
     public void RemoveOccupantFromGrid(Vector2Int position)
     {
         if (gridObjects.TryGetValue(position, out var obj))
         {
             gridObjects.Remove(position);
-            CheckForTunnelSpawns(position);
+            TunnelManager.Instance.CheckForTunnelSpawns(position);
             FloodFillManager.Instance.FloodFillInteractable(position);
         }
     }
+
     private void SpawnGridObjects()
     {
         if (levelData == null)
@@ -57,78 +64,64 @@ public class GameManager : MonoBehaviour
             if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
                 data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
                 continue;
-            GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
-            Passenger passenger = passengerObj.GetComponent<Passenger>();
-            passenger.SetColor(data.color);
-            passenger.Position = data.gridPosition;
-            passenger.SetInteractable(false);
-            foreach (string traitType in data.traitTypes)
-            {
-                System.Type type = System.Type.GetType(traitType);
-                if (type != null && type.IsSubclassOf(typeof(PassengerTrait)))
-                {
-                    PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
-                    passenger.traits.Add(trait);
-                }
-            }
-            Vector3 worldPos = new Vector3(
-                gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
-                0.5f,
-                gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
-            );
-            passengerObj.transform.position = worldPos;
-            gridObjects[data.gridPosition] = passenger;
-        }
 
+            SpawnPassenger(data);
+        }
         foreach (WallData data in levelData.walls)
         {
             if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
                 data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
                 continue;
-            GameObject wallObj = Instantiate(wallPrefab, gridParent);
-            Wall wall = wallObj.GetComponent<Wall>();
-            wall.Position = data.gridPosition;
-            Vector3 worldPos = new Vector3(
-                gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
-                0.5f,
-                gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
-            );
-            wallObj.transform.position = worldPos;
-            gridObjects[data.gridPosition] = wall;
+
+            SpawnWall(data);
         }
-
-        foreach (TunnelData data in levelData.tunnels)
-        {
-            if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
-                data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
-                continue;
-
-            GameObject tunnelObj = Instantiate(tunnelPrefab, gridParent);
-            Tunnel tunnel = tunnelObj.GetComponent<Tunnel>();
-            tunnel.Position = data.gridPosition;
-            tunnel.SpawnDirection = data.direction;
-
-            tunnel.PassengerQueue = new List<PassengerData>();
-            foreach (var passengerData in data.passengerQueue)
-            {
-                tunnel.PassengerQueue.Add(new PassengerData
-                {
-                    color = passengerData.color,
-                    traitTypes = new List<string>(passengerData.traitTypes)
-                });
-            }
-
-            Vector3 worldPos = new Vector3(
-                gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
-                0.5f,
-                gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
-            );
-            tunnelObj.transform.position = worldPos;
-            gridObjects[data.gridPosition] = tunnel;
-        }
+        TunnelManager.Instance.SpawnTunnelsFromLevelData(levelData.tunnels);
 
         FloodFillManager.Instance.InitializeInteractablePassengers();
     }
+
+    private void SpawnPassenger(PassengerData data)
+    {
+        GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
+        Passenger passenger = passengerObj.GetComponent<Passenger>();
+        passenger.SetColor(data.color);
+        passenger.Position = data.gridPosition;
+        passenger.SetInteractable(false);
+
+        foreach (string traitType in data.traitTypes)
+        {
+            System.Type type = System.Type.GetType(traitType);
+            if (type != null && type.IsSubclassOf(typeof(PassengerTrait)))
+            {
+                PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
+                passenger.traits.Add(trait);
+            }
+        }
+
+        Vector3 worldPos = new Vector3(
+            gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
+            0.5f,
+            gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
+        );
+        passengerObj.transform.position = worldPos;
+        gridObjects[data.gridPosition] = passenger;
+    }
+
+    private void SpawnWall(WallData data)
+    {
+        GameObject wallObj = Instantiate(wallPrefab, gridParent);
+        Wall wall = wallObj.GetComponent<Wall>();
+        wall.Position = data.gridPosition;
+
+        Vector3 worldPos = new Vector3(
+            gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
+            0.5f,
+            gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
+        );
+        wallObj.transform.position = worldPos;
+        gridObjects[data.gridPosition] = wall;
+    }
+
     public void RespawnPassengers()
     {
         foreach (var kv in new Dictionary<Vector2Int, MapObject>(gridObjects))
@@ -139,51 +132,13 @@ public class GameManager : MonoBehaviour
                 gridObjects.Remove(kv.Key);
             }
         }
+        TunnelManager.Instance.ResetAllTunnels();
         SpawnGridObjects();
     }
+
     public Vector2Int GetGridBounds()
     {
         return new Vector2Int(GRID_SIZE, GRID_SIZE);
-    }
-    private void CheckForTunnelSpawns(Vector2Int emptyPos)
-    {
-        foreach (var dir in DirectionVectors.CardinalDirections)
-        {
-            Vector2Int tunnelPos = emptyPos - dir;
-            if (gridObjects.TryGetValue(tunnelPos, out var obj) && obj is Tunnel tunnel && tunnel.SpawnDirection == dir)
-            {
-                if (!tunnel.HasPassengersLeft)
-                    continue;
-
-                PassengerData template = tunnel.GetNextPassenger();
-                if (template == null)
-                    continue;
-
-                GameObject passengerObj = Instantiate(passengerPrefab, gridParent);
-                Passenger passenger = passengerObj.GetComponent<Passenger>();
-                passenger.SetColor(template.color);
-                passenger.Position = emptyPos;
-                passenger.SetInteractable(false);
-
-                foreach (string traitType in template.traitTypes)
-                {
-                    System.Type type = System.Type.GetType(traitType);
-                    if (type != null && type.IsSubclassOf(typeof(PassengerTrait)))
-                    {
-                        PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
-                        passenger.traits.Add(trait);
-                    }
-                }
-
-                Vector3 worldPos = new Vector3(
-                    gridParent.transform.position.x + emptyPos.x * GRID_SPACING,
-                    0.5f,
-                    gridParent.transform.position.z + emptyPos.y * GRID_SPACING
-                );
-                passengerObj.transform.position = worldPos;
-                gridObjects[emptyPos] = passenger;
-            }
-        }
     }
 
     public List<Vector2Int> FindPathToHighestEmpty(Vector2Int startPos)
