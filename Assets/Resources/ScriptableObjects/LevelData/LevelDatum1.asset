@@ -15,7 +15,8 @@ MonoBehaviour:
   passengers:
   - color: 1
     gridPosition: {x: 0, y: 1}
-    traitTypes: []
+    traitTypes:
+    - BombedTrait
   - color: 0
     gridPosition: {x: 1, y: 0}
     traitTypes: []

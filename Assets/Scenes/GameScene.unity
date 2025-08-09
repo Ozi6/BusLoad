@@ -1157,6 +1157,9 @@ MonoBehaviour:
   - traitTypeName: CloakedTrait
     prefab: {fileID: 2949816588867908182, guid: cf510a83056f6d14e9434a80b1fbc84f, type: 3}
     poolSize: 4
+  - traitTypeName: BombedTrait
+    prefab: {fileID: 616364826603683562, guid: ba3ff84b27ba12248b0054a20adc2808, type: 3}
+    poolSize: 2
 --- !u!1 &1240474797
 GameObject:
   m_ObjectHideFlags: 0
