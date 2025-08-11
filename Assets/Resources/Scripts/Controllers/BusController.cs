@@ -62,6 +62,13 @@ public class BusController : MonoBehaviour
                 var config = data.traitConfigs.Find(c => c.traitType == traitType);
                 if (config != null)
                     trait.GetType().GetMethod("Configure")?.Invoke(trait, new object[] { config });
+
+                BusTraitVisualComponent visual = BusTraitVisualPool.Instance
+                    .GetVisual(type, trait)
+                    .GetComponent<BusTraitVisualComponent>();
+
+                visual.transform.SetParent(busObj.transform, false);
+                visual.UpdateVisual(trait);
             }
         }
 

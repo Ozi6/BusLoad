@@ -48,7 +48,7 @@ public class Passenger : MapObject
 
     public bool CanBoardBus(Bus bus)
     {
-        if (Color != bus.Color)
+        if (Color != bus.Color || bus.IsBusFull())
             return false;
         foreach (PassengerTrait trait in traits)
             if (!trait.CanBoard(this, bus))

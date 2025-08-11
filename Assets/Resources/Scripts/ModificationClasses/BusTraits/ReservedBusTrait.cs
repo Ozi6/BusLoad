@@ -1,6 +1,15 @@
 public class ReservedBusTrait : BusTrait
 {
     private int reservedPassengerCapacity = 1;
+    private void Awake()
+    {
+        owner = GetComponent<Bus>();
+    }
+
+    private void Start()
+    {
+        UpdateVisualIndicator();
+    }
 
     public void Configure(TraitConfiguration config)
     {
@@ -46,4 +55,5 @@ public class ReservedBusTrait : BusTrait
     }
 
     public int ReservedPassengerCapacity => reservedPassengerCapacity;
+    public int RemainingReservedSeats => ReservedPassengerCapacity - GetReservedPassengerCount(owner);
 }

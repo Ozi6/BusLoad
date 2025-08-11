@@ -49,4 +49,9 @@ public class Bus : MonoBehaviour
             bodyRenderer.material.color = renderColor;
         }
     }
+
+    public bool IsBusFull()
+    {
+        return Passengers.Count >= passengerPositions.Length;
+    }
 }
