@@ -8,7 +8,7 @@ public class BombedTrait : PassengerTrait
     private bool isActivated = false;
     private bool isExploded = false;
 
-    private void Start()
+    private void Awake()
     {
         owner = GetComponent<Passenger>();
         currentCountdown = initialCountdown;
@@ -39,14 +39,12 @@ public class BombedTrait : PassengerTrait
     {
         if (owner == null || isExploded) return;
         if (isActivated) DecrementCountdown();
-        else if (IsNeighboring(owner.Position, clickedPosition)) ActivateBomb();
     }
 
-    private bool IsNeighboring(Vector2Int pos1, Vector2Int pos2)
+    protected override void OnPassengerReachedByFlood(Passenger passenger)
     {
-        int deltaX = Mathf.Abs(pos1.x - pos2.x);
-        int deltaY = Mathf.Abs(pos1.y - pos2.y);
-        return (deltaX <= 1 && deltaY <= 1) && !(deltaX == 0 && deltaY == 0);
+        if (passenger == owner && !isExploded && !isActivated)
+            ActivateBomb();
     }
 
     private void ActivateBomb()

@@ -7,12 +7,14 @@ public abstract class PassengerTrait : MonoBehaviour
     protected virtual void OnEnable()
     {
         PassengerEvents.OnPassengerSelected += OnNearbyPassengerSelected;
+        PassengerEvents.OnPassengerReachedByFlood += OnPassengerReachedByFlood;
         CreateVisualIndicator();
     }
 
     protected virtual void OnDisable()
     {
         PassengerEvents.OnPassengerSelected -= OnNearbyPassengerSelected;
+        PassengerEvents.OnPassengerReachedByFlood -= OnPassengerReachedByFlood;
         ReturnVisualIndicator();
     }
 
@@ -45,5 +47,7 @@ public abstract class PassengerTrait : MonoBehaviour
 
     public abstract void OnSelected(Passenger passenger);
     public abstract bool CanBoard(Passenger passenger, Bus bus);
+
     protected virtual void OnNearbyPassengerSelected(Vector2Int position) { }
+    protected virtual void OnPassengerReachedByFlood(Passenger passenger) { } // New virtual method for flood fill activation
 }

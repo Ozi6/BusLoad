@@ -93,5 +93,6 @@ public class Passenger : MapObject
     public override void OnReachedByFlood()
     {
         SetInteractable(true);
+        PassengerEvents.TriggerPassengerReachedByFlood(this);
     }
 }

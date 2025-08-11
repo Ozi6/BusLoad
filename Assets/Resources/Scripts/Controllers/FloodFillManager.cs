@@ -74,6 +74,8 @@ public class FloodFillManager : MonoBehaviour
             {
                 MapObject obj = GameManager.Instance.gridObjects[current];
                 obj.OnReachedByFlood();
+                if (obj is Passenger passenger)
+                    PassengerEvents.TriggerPassengerReachedByFlood(passenger);
                 if (obj.BlocksFlood)
                     continue;
             }
