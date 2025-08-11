@@ -37,15 +37,34 @@ public class FloodFillManager : MonoBehaviour
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
         HashSet<Vector2Int> globallyReached = new HashSet<Vector2Int>();
-        List<Vector2Int> highestEmptyPositions = FindHighestEmptyPositions();
-        foreach (Vector2Int startPos in highestEmptyPositions)
+        List<Vector2Int> highestPassengerPositions = FindHighestPassengerPositions();
+
+        foreach (Vector2Int startPos in highestPassengerPositions)
         {
-            if (globallyReached.Contains(startPos))
-                continue;
+            if (globallyReached.Contains(startPos)) continue;
             HashSet<Vector2Int> reachedInThisFlood = PerformInitializationFloodFill(startPos);
             foreach (Vector2Int pos in reachedInThisFlood)
                 globallyReached.Add(pos);
         }
+    }
+    private List<Vector2Int> FindHighestPassengerPositions()
+    {
+        Vector2Int gridSize = GameManager.Instance.GetGridBounds();
+        List<Vector2Int> highestPassengers = new List<Vector2Int>();
+        int maxY = gridSize.y - 1;
+
+        for (int x = 0; x < gridSize.x; x++)
+        {
+            Vector2Int pos = new Vector2Int(x, maxY);
+            if (GameManager.Instance.gridManager.HasOccupantAt(pos))
+            {
+                MapObject obj = GameManager.Instance.gridObjects[pos];
+                if (obj is Passenger)
+                    highestPassengers.Add(pos);
+            }
+        }
+
+        return highestPassengers;
     }
     private List<Vector2Int> FindHighestEmptyPositions()
     {

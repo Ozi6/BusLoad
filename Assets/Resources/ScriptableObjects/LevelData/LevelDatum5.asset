@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelName: 
   gridWidth: 5
-  gridHeight: 4
+  gridHeight: 3
   gridSpacing: 2
   passengers:
   - color: 4
