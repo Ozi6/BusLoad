@@ -54,10 +54,14 @@ public class BusController : MonoBehaviour
         foreach (string traitType in data.traitTypes)
         {
             System.Type type = System.Type.GetType(traitType);
-            if (type != null)
+            if (type != null && type.IsSubclassOf(typeof(BusTrait)))
             {
                 BusTrait trait = (BusTrait)busObj.AddComponent(type);
                 CurrentBus.traits.Add(trait);
+
+                var config = data.traitConfigs.Find(c => c.traitType == traitType);
+                if (config != null)
+                    trait.GetType().GetMethod("Configure")?.Invoke(trait, new object[] { config });
             }
         }
 

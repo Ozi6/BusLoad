@@ -232,6 +232,10 @@ public class LevelDataEditor : Editor
                 config.boolValue = EditorGUILayout.Toggle("Initially Cloaked", config.boolValue);
                 break;
 
+            case "ReservedTrait":
+                EditorGUILayout.LabelField("Reserved Configuration:", EditorStyles.miniLabel);
+                break;
+
             case "RopedTrait":
                 EditorGUILayout.LabelField("Rope Configuration:", EditorStyles.miniLabel);
                 config.intValue = EditorGUILayout.IntField("Rope Length", config.intValue == 0 ? 3 : config.intValue);
@@ -474,11 +478,116 @@ public class LevelDataEditor : Editor
 
         if (showBuses)
         {
-            SerializedProperty busesProperty = serializedObject.FindProperty("buses");
-            EditorGUILayout.PropertyField(busesProperty, true);
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.MaxHeight(200));
+
+            for (int i = 0; i < levelData.buses.Count; i++)
+                DrawBusEntry(i);
+
+            EditorGUILayout.EndScrollView();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Add Bus"))
+            {
+                levelData.buses.Add(new BusData
+                {
+                    color = PassengerColor.Red,
+                    traitTypes = new List<string>()
+                });
+            }
+
+            if (GUILayout.Button("Clear All Buses"))
+            {
+                if (EditorUtility.DisplayDialog("Clear Buses", "Are you sure you want to remove all buses?", "Yes", "Cancel"))
+                {
+                    levelData.buses.Clear();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
         }
 
         EditorGUILayout.EndVertical();
+    }
+
+    private void DrawBusEntry(int index)
+    {
+        BusData bus = levelData.buses[index];
+
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+
+        GUI.backgroundColor = GetColorFromEnum(bus.color);
+        EditorGUILayout.LabelField("", EditorStyles.helpBox, GUILayout.Width(20), GUILayout.Height(20));
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.LabelField($"Bus {index}", EditorStyles.boldLabel);
+
+        if (GUILayout.Button("X", GUILayout.Width(25)))
+        {
+            levelData.buses.RemoveAt(index);
+            return;
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        bus.color = (PassengerColor)EditorGUILayout.EnumPopup("Color", bus.color);
+
+        EditorGUILayout.LabelField("Traits:");
+        EditorGUI.indentLevel++;
+        for (int t = 0; t < bus.traitTypes.Count; t++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            bus.traitTypes[t] = EditorGUILayout.TextField(bus.traitTypes[t]);
+            if (GUILayout.Button("-", GUILayout.Width(25)))
+            {
+                bus.traitTypes.RemoveAt(t);
+                var configToRemove = bus.traitConfigs.FirstOrDefault(c => c.traitType == bus.traitTypes[t]);
+                if (configToRemove != null)
+                    bus.traitConfigs.Remove(configToRemove);
+                t--;
+            }
+            EditorGUILayout.EndHorizontal();
+            DrawBusTraitConfiguration(bus, bus.traitTypes[t]);
+        }
+
+        if (GUILayout.Button("Add Trait"))
+            bus.traitTypes.Add("");
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.EndVertical();
+    }
+
+    private void DrawBusTraitConfiguration(BusData bus, string traitType)
+    {
+        if (string.IsNullOrEmpty(traitType))
+            return;
+
+        var config = bus.traitConfigs.FirstOrDefault(c => c.traitType == traitType);
+        if (config == null)
+        {
+            config = new TraitConfiguration { traitType = traitType };
+            bus.traitConfigs.Add(config);
+        }
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.BeginVertical("box");
+
+        switch (traitType)
+        {
+            case "ReservedBusTrait":
+                EditorGUILayout.LabelField("Reserved Bus Configuration:", EditorStyles.miniLabel);
+                config.intValue = EditorGUILayout.IntField("Reserved Capacity", config.intValue == 0 ? 1 : config.intValue);
+                break;
+
+            default:
+                EditorGUILayout.LabelField("Generic Configuration:", EditorStyles.miniLabel);
+                config.intValue = EditorGUILayout.IntField("Int Value", config.intValue);
+                config.boolValue = EditorGUILayout.Toggle("Bool Value", config.boolValue);
+                config.floatValue = EditorGUILayout.FloatField("Float Value", config.floatValue);
+                break;
+        }
+
+        EditorGUILayout.EndVertical();
+        EditorGUI.indentLevel--;
     }
 
     private void DrawUtilityButtons()

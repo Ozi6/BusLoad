@@ -34,6 +34,10 @@ public class BombedTrait : PassengerTrait
     {
         return !isExploded;
     }
+    public override bool CanMove(Passenger passenger, Bus bus)
+    {
+        return true;
+    }
 
     protected override void OnNearbyPassengerSelected(Vector2Int clickedPosition)
     {

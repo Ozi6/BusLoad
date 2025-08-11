@@ -31,6 +31,7 @@ public class RopedTrait : PassengerTrait
 
     public override void OnSelected(Passenger passenger) { }
     public override bool CanBoard(Passenger passenger, Bus bus) => false;
+    public override bool CanMove(Passenger passenger, Bus bus) => false;
 
     protected override void OnNearbyPassengerSelected(Vector2Int clickedPosition)
     {

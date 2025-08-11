@@ -50,8 +50,9 @@ public class Passenger : MapObject
     {
         if (Color != bus.Color)
             return false;
-        if (!CanTraitMove(bus))
-            return false;
+        foreach (PassengerTrait trait in traits)
+            if (!trait.CanBoard(this, bus))
+                return false;
         foreach (BusTrait trait in bus.traits)
             if (!trait.CanAcceptPassenger(bus, this))
                 return false;
@@ -61,7 +62,7 @@ public class Passenger : MapObject
     public bool CanTraitMove(Bus bus)
     {
         foreach (PassengerTrait trait in traits)
-            if (!trait.CanBoard(this, bus))
+            if (!trait.CanMove(this, bus))
                 return false;
         return true;
     }

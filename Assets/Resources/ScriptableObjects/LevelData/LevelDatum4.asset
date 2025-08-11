@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16db6e1831fd0704c8d78a808dce9da6, type: 3}
-  m_Name: LevelDatum3
+  m_Name: LevelDatum4
   m_EditorClassIdentifier: 
   levelName: 
   gridWidth: 10
@@ -240,12 +240,80 @@ MonoBehaviour:
     gridPosition: {x: 6, y: 6}
     traitTypes: []
     traitConfigs: []
+  - color: 1
+    gridPosition: {x: 8, y: 4}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 8, y: 5}
+    traitTypes:
+    - ReservedTrait
+    traitConfigs:
+    - traitType: ReservedTrait
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+  - color: 1
+    gridPosition: {x: 8, y: 6}
+    traitTypes:
+    - ReservedTrait
+    traitConfigs:
+    - traitType: R
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Re
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Res
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Rese
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Reser
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Reserv
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Reserve
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Reserved
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: ReservedT
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: ReservedTr
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: ReservedTra
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: ReservedTrai
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: ReservedTrait
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
   walls:
   - gridPosition: {x: 0, y: 5}
   - gridPosition: {x: 5, y: 2}
   - gridPosition: {x: 5, y: 1}
-  - gridPosition: {x: 5, y: 0}
-  - gridPosition: {x: 3, y: 0}
   - gridPosition: {x: 0, y: 8}
   - gridPosition: {x: 0, y: 9}
   - gridPosition: {x: 1, y: 9}
@@ -265,13 +333,8 @@ MonoBehaviour:
   - gridPosition: {x: 0, y: 1}
   - gridPosition: {x: 0, y: 0}
   - gridPosition: {x: 1, y: 0}
-  - gridPosition: {x: 2, y: 1}
-  - gridPosition: {x: 2, y: 2}
-  - gridPosition: {x: 3, y: 2}
-  - gridPosition: {x: 4, y: 2}
   - gridPosition: {x: 4, y: 1}
   - gridPosition: {x: 3, y: 1}
-  - gridPosition: {x: 2, y: 0}
   - gridPosition: {x: 2, y: 3}
   - gridPosition: {x: 2, y: 4}
   - gridPosition: {x: 2, y: 5}
@@ -279,19 +342,13 @@ MonoBehaviour:
   - gridPosition: {x: 2, y: 6}
   - gridPosition: {x: 2, y: 8}
   - gridPosition: {x: 2, y: 9}
-  - gridPosition: {x: 4, y: 0}
-  - gridPosition: {x: 6, y: 0}
   - gridPosition: {x: 6, y: 1}
   - gridPosition: {x: 6, y: 2}
   - gridPosition: {x: 7, y: 2}
   - gridPosition: {x: 7, y: 1}
-  - gridPosition: {x: 8, y: 1}
   - gridPosition: {x: 9, y: 2}
-  - gridPosition: {x: 8, y: 2}
   - gridPosition: {x: 9, y: 1}
   - gridPosition: {x: 9, y: 0}
-  - gridPosition: {x: 8, y: 0}
-  - gridPosition: {x: 7, y: 0}
   - gridPosition: {x: 7, y: 3}
   - gridPosition: {x: 7, y: 4}
   - gridPosition: {x: 7, y: 5}
@@ -306,12 +363,8 @@ MonoBehaviour:
   - gridPosition: {x: 8, y: 7}
   - gridPosition: {x: 9, y: 7}
   - gridPosition: {x: 9, y: 6}
-  - gridPosition: {x: 8, y: 6}
-  - gridPosition: {x: 8, y: 5}
   - gridPosition: {x: 9, y: 5}
   - gridPosition: {x: 9, y: 4}
-  - gridPosition: {x: 8, y: 4}
-  - gridPosition: {x: 8, y: 3}
   - gridPosition: {x: 9, y: 3}
   tunnels:
   - gridPosition: {x: 3, y: 6}
@@ -417,17 +470,38 @@ MonoBehaviour:
   buses:
   - color: 4
     traitTypes: []
+    traitConfigs: []
   - color: 1
     traitTypes: []
+    traitConfigs: []
   - color: 0
-    traitTypes: []
+    traitTypes:
+    - ReservedBusTrait
+    traitConfigs:
+    - traitType: ReservedBusTrait
+      intValue: 1
+      boolValue: 0
+      floatValue: 0
   - color: 3
     traitTypes: []
+    traitConfigs: []
   - color: 2
     traitTypes: []
+    traitConfigs: []
   - color: 3
     traitTypes: []
+    traitConfigs: []
   - color: 4
     traitTypes: []
+    traitConfigs: []
   - color: 1
     traitTypes: []
+    traitConfigs: []
+  - color: 1
+    traitTypes:
+    - ReservedBusTrait
+    traitConfigs:
+    - traitType: ReservedBusTrait
+      intValue: 2
+      boolValue: 0
+      floatValue: 0

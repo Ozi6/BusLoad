@@ -27,6 +27,10 @@ public class CloakedTrait : PassengerTrait
     {
         return !isCloaked;
     }
+    public override bool CanMove(Passenger passenger, Bus bus)
+    {
+        return !isCloaked;
+    }
 
     protected override void OnNearbyPassengerSelected(Vector2Int clickedPosition)
     {
