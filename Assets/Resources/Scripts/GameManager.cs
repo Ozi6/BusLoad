@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        levelData = LevelManager.GetSelectedLevel();
+
         InitializeGrid();
         Invoke(nameof(SpawnGridObjects), 0.1f);
     }

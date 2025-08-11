@@ -16,6 +16,7 @@ public class BusController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        levelData = LevelManager.GetSelectedLevel();
         InitializeBuses();
         SpawnNextBus();
     }
