@@ -15,7 +15,7 @@ public class FloodFillManager : MonoBehaviour
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
-            if (GameManager.Instance.HasOccupantAt(current))
+            if (GameManager.Instance.gridManager.HasOccupantAt(current))
             {
                 MapObject obj = GameManager.Instance.gridObjects[current];
                 obj.OnReachedByFlood();
@@ -55,7 +55,7 @@ public class FloodFillManager : MonoBehaviour
         for (int x = 0; x < gridSize.x; x++)
         {
             Vector2Int pos = new Vector2Int(x, maxY);
-            if (!GameManager.Instance.HasOccupantAt(pos))
+            if (!GameManager.Instance.gridManager.HasOccupantAt(pos))
                 highestEmpty.Add(pos);
         }
         return highestEmpty;
@@ -70,7 +70,7 @@ public class FloodFillManager : MonoBehaviour
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
-            if (GameManager.Instance.HasOccupantAt(current))
+            if (GameManager.Instance.gridManager.HasOccupantAt(current))
             {
                 MapObject obj = GameManager.Instance.gridObjects[current];
                 obj.OnReachedByFlood();

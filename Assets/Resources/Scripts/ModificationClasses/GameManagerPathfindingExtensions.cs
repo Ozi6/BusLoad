@@ -10,7 +10,7 @@ public static class GameManagerPathfindingExtensions
         if (pathfinder == null)
         {
             Vector2Int bounds = gameManager.GetGridBounds();
-            pathfinder = new AStarPathfinder(bounds.x, gameManager);
+            pathfinder = new AStarPathfinder(bounds.x, gameManager.gridManager);
         }
         return pathfinder;
     }

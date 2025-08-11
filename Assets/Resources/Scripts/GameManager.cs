@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -13,6 +12,8 @@ public class GameManager : MonoBehaviour
     public Transform gridParent;
     public Dictionary<Vector2Int, MapObject> gridObjects = new Dictionary<Vector2Int, MapObject>();
 
+    public GridManager gridManager;
+
     private int GridWidth => levelData?.gridWidth ?? 12;
     private int GridHeight => levelData?.gridHeight ?? 12;
     private float GridSpacing => levelData?.gridSpacing ?? 2f;
@@ -22,71 +23,17 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         levelData = LevelManager.GetSelectedLevel();
-
-        InitializeGrid();
+        gridManager = new GridManager(gridParent, gridSquarePrefab, gridObjects, GridWidth, GridHeight, GridSpacing);
+        gridManager.InitializeGrid();
         Invoke(nameof(SpawnGridObjects), 0.1f);
-    }
-
-    private void InitializeGrid()
-    {
-        if (gridSquarePrefab == null)
-            return;
-        if (gridParent == null)
-            gridParent = new GameObject("GridParent").transform;
-
-        for (int x = 0; x < GridWidth; x++)
-        {
-            for (int y = 0; y < GridHeight; y++)
-            {
-                Vector3 worldPos = new Vector3(
-                    gridParent.transform.position.x + x * GridSpacing,
-                    0.1f,
-                    gridParent.transform.position.z + y * GridSpacing
-                );
-                GameObject gridSquare = Instantiate(gridSquarePrefab, worldPos, Quaternion.identity, gridParent);
-                gridSquare.name = $"GridSquare{x}_{y}";
-                gridSquare.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
-            }
-        }
-    }
-
-    public bool HasOccupantAt(Vector2Int position) => gridObjects.ContainsKey(position);
-
-    public bool HasPassengerAt(Vector2Int position) => gridObjects.TryGetValue(position, out var obj) && obj is Passenger;
-
-    public void RemoveOccupantFromGrid(Vector2Int position)
-    {
-        if (gridObjects.TryGetValue(position, out var obj))
-        {
-            gridObjects.Remove(position);
-            TunnelManager.Instance.CheckForTunnelSpawns(position);
-            FloodFillManager.Instance.FloodFillInteractable(position);
-        }
     }
 
     private void SpawnGridObjects()
     {
-        if (levelData == null)
-            return;
-
-        foreach (PassengerData data in levelData.passengers)
-        {
-            if (data.gridPosition.x < 0 || data.gridPosition.x >= GridWidth ||
-                data.gridPosition.y < 0 || data.gridPosition.y >= GridHeight)
-                continue;
-
-            SpawnPassenger(data);
-        }
-        foreach (WallData data in levelData.walls)
-        {
-            if (data.gridPosition.x < 0 || data.gridPosition.x >= GridWidth ||
-                data.gridPosition.y < 0 || data.gridPosition.y >= GridHeight)
-                continue;
-
-            SpawnWall(data);
-        }
+        if (levelData == null) return;
+        foreach (var p in levelData.passengers) SpawnPassenger(p);
+        foreach (var w in levelData.walls) SpawnWall(w);
         TunnelManager.Instance.SpawnTunnelsFromLevelData(levelData.tunnels);
-
         FloodFillManager.Instance.InitializeInteractablePassengers();
     }
 
@@ -106,22 +53,17 @@ public class GameManager : MonoBehaviour
                 PassengerTrait trait = (PassengerTrait)passengerObj.AddComponent(type);
                 passenger.traits.Add(trait);
 
-                var config = data.traitConfigs.FirstOrDefault(c => c.traitType == traitType);
+                var config = data.traitConfigs.Find(c => c.traitType == traitType);
                 if (config != null)
-                {
-                    var configMethod = trait.GetType().GetMethod("Configure");
-                    if (configMethod != null)
-                        configMethod.Invoke(trait, new object[] { config });
-                }
+                    trait.GetType().GetMethod("Configure")?.Invoke(trait, new object[] { config });
             }
         }
 
-        Vector3 worldPos = new Vector3(
-            gridParent.transform.position.x + data.gridPosition.x * GridSpacing,
+        passengerObj.transform.position = new Vector3(
+            gridParent.position.x + data.gridPosition.x * GridSpacing,
             0.5f,
-            gridParent.transform.position.z + data.gridPosition.y * GridSpacing
+            gridParent.position.z + data.gridPosition.y * GridSpacing
         );
-        passengerObj.transform.position = worldPos;
         gridObjects[data.gridPosition] = passenger;
     }
 
@@ -131,12 +73,11 @@ public class GameManager : MonoBehaviour
         Wall wall = wallObj.GetComponent<Wall>();
         wall.Position = data.gridPosition;
 
-        Vector3 worldPos = new Vector3(
-            gridParent.transform.position.x + data.gridPosition.x * GridSpacing,
+        wallObj.transform.position = new Vector3(
+            gridParent.position.x + data.gridPosition.x * GridSpacing,
             0.5f,
-            gridParent.transform.position.z + data.gridPosition.y * GridSpacing
+            gridParent.position.z + data.gridPosition.y * GridSpacing
         );
-        wallObj.transform.position = worldPos;
         gridObjects[data.gridPosition] = wall;
     }
 
@@ -154,14 +95,11 @@ public class GameManager : MonoBehaviour
         SpawnGridObjects();
     }
 
-    public Vector2Int GetGridBounds()
-    {
-        return new Vector2Int(GridWidth, GridHeight);
-    }
+    public Vector2Int GetGridBounds() => new Vector2Int(GridWidth, GridHeight);
 
     public List<Vector2Int> FindPathToHighestEmpty(Vector2Int startPos)
     {
-        AStarPathfinder pathfinder = new AStarPathfinder(GridWidth, GridHeight, this);
+        AStarPathfinder pathfinder = new AStarPathfinder(GridWidth, GridHeight, gridManager);
         return pathfinder.FindPathToHighestEmptySquare(startPos);
     }
 }

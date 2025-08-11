@@ -6,17 +6,17 @@ public class AStarPathfinder
 {
     private readonly int gridWidth;
     private readonly int gridHeight;
-    private readonly GameManager gameManager;
+    private readonly GridManager gridManager;
 
-    public AStarPathfinder(int gridWidth, int gridHeight, GameManager gameManager)
+    public AStarPathfinder(int gridWidth, int gridHeight, GridManager gridManager)
     {
         this.gridWidth = gridWidth;
         this.gridHeight = gridHeight;
-        this.gameManager = gameManager;
+        this.gridManager = gridManager;
     }
 
-    public AStarPathfinder(int gridSize, GameManager gameManager)
-        : this(gridSize, gridSize, gameManager)
+    public AStarPathfinder(int gridSize, GridManager gridManager)
+        : this(gridSize, gridSize, gridManager)
     {
     }
 
@@ -138,7 +138,7 @@ public class AStarPathfinder
         if (!IsValidPosition(position))
             return false;
 
-        return !gameManager.HasOccupantAt(position) || (gameManager.gridObjects.TryGetValue(position, out var obj) && !obj.BlocksPath);
+        return !gridManager.HasOccupantAt(position) || (GameManager.Instance.gridObjects.TryGetValue(position, out var obj) && !obj.BlocksPath);
     }
 
     private float GetDistance(Vector2Int a, Vector2Int b)

@@ -1,138 +1,57 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
-public class GridManager : MonoBehaviour
+public class GridManager
 {
-    [Header("Grid Settings")]
-    public int gridWidth = 10;
-    public int gridHeight = 10;
-    public float cellSize = 1f;
-    public Material gridMaterial;
-    public Material highlightMaterial;
+    private Transform gridParent;
+    private GameObject gridSquarePrefab;
+    private Dictionary<Vector2Int, MapObject> gridObjects;
+    private float gridSpacing;
+    private int gridWidth;
+    private int gridHeight;
 
-    [Header("Visual")]
-    public GameObject gridCellPrefab;
-    public Transform gridParent;
-
-    private Dictionary<Vector2Int, GameObject> gridCells = new Dictionary<Vector2Int, GameObject>();
-    private GameObject highlightedCell;
-
-    public static GridManager Instance { get; private set; }
-
-    private void Awake()
+    public GridManager(Transform parent, GameObject squarePrefab, Dictionary<Vector2Int, MapObject> objects,
+                       int width, int height, float spacing)
     {
-        Instance = this;
+        gridParent = parent;
+        gridSquarePrefab = squarePrefab;
+        gridObjects = objects;
+        gridWidth = width;
+        gridHeight = height;
+        gridSpacing = spacing;
     }
 
-    private void Start()
+    public void InitializeGrid()
     {
-        CreateGrid();
-    }
-
-    public void CreateGrid()
-    {
-        ClearGrid();
+        if (gridSquarePrefab == null) return;
+        if (gridParent == null) gridParent = new GameObject("GridParent").transform;
 
         for (int x = 0; x < gridWidth; x++)
         {
-            for (int z = 0; z < gridHeight; z++)
+            for (int y = 0; y < gridHeight; y++)
             {
-                Vector2Int gridPos = new Vector2Int(x, z);
-                Vector3 worldPos = GridToWorldPosition(gridPos);
-
-                GameObject cell = CreateGridCell(worldPos, gridPos);
-                gridCells[gridPos] = cell;
+                Vector3 worldPos = new Vector3(
+                    gridParent.position.x + x * gridSpacing,
+                    0.1f,
+                    gridParent.position.z + y * gridSpacing
+                );
+                GameObject gridSquare = Object.Instantiate(gridSquarePrefab, worldPos, Quaternion.identity, gridParent);
+                gridSquare.name = $"GridSquare{x}_{y}";
+                gridSquare.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
             }
         }
     }
 
-    private GameObject CreateGridCell(Vector3 worldPos, Vector2Int gridPos)
-    {
-        GameObject cell;
+    public bool HasOccupantAt(Vector2Int position) => gridObjects.ContainsKey(position);
+    public bool HasPassengerAt(Vector2Int position) => gridObjects.TryGetValue(position, out var obj) && obj is Passenger;
 
-        if (gridCellPrefab != null)
-            cell = Instantiate(gridCellPrefab, gridParent);
-        else
+    public void RemoveOccupantFromGrid(Vector2Int position)
+    {
+        if (gridObjects.TryGetValue(position, out var obj))
         {
-            cell = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            cell.transform.SetParent(gridParent);
-
-            if (cell.GetComponent<Collider>())
-                DestroyImmediate(cell.GetComponent<Collider>());
-        }
-
-        cell.name = $"GridCell_{gridPos.x}_{gridPos.y}";
-        cell.transform.position = worldPos;
-        cell.transform.rotation = Quaternion.Euler(90, 0, 0);
-        cell.transform.localScale = Vector3.one * cellSize * 0.9f;
-
-        GridCell gridCellComponent = cell.AddComponent<GridCell>();
-        gridCellComponent.gridPosition = gridPos;
-
-        Renderer renderer = cell.GetComponent<Renderer>();
-        if (renderer && gridMaterial)
-        {
-            renderer.material = gridMaterial;
-        }
-
-        return cell;
-    }
-
-    public void ClearGrid()
-    {
-        foreach (var cell in gridCells.Values)
-        {
-            if (cell != null)
-                DestroyImmediate(cell);
-        }
-        gridCells.Clear();
-    }
-
-    public Vector3 GridToWorldPosition(Vector2Int gridPos)
-    {
-        return new Vector3(gridPos.x * cellSize, 0f, gridPos.y * cellSize);
-    }
-
-    public Vector2Int WorldToGridPosition(Vector3 worldPos)
-    {
-        return new Vector2Int(
-            Mathf.RoundToInt(worldPos.x / cellSize),
-            Mathf.RoundToInt(worldPos.z / cellSize)
-        );
-    }
-
-    public bool IsValidGridPosition(Vector2Int gridPos)
-    {
-        return gridPos.x >= 0 && gridPos.x < gridWidth &&
-               gridPos.y >= 0 && gridPos.y < gridHeight;
-    }
-
-    public void HighlightCell(Vector2Int gridPos)
-    {
-        if (highlightedCell != null)
-        {
-            Renderer renderer = highlightedCell.GetComponent<Renderer>();
-            if (renderer && gridMaterial)
-                renderer.material = gridMaterial;
-        }
-
-        if (gridCells.TryGetValue(gridPos, out GameObject cell))
-        {
-            highlightedCell = cell;
-            Renderer renderer = cell.GetComponent<Renderer>();
-            if (renderer && highlightMaterial)
-                renderer.material = highlightMaterial;
-        }
-    }
-
-    public void ClearHighlight()
-    {
-        if (highlightedCell != null)
-        {
-            Renderer renderer = highlightedCell.GetComponent<Renderer>();
-            if (renderer && gridMaterial)
-                renderer.material = gridMaterial;
-            highlightedCell = null;
+            gridObjects.Remove(position);
+            TunnelManager.Instance.CheckForTunnelSpawns(position);
+            FloodFillManager.Instance.FloodFillInteractable(position);
         }
     }
 }

@@ -40,7 +40,7 @@ public class PassengerController : MonoBehaviour
     {
         Vector2Int startPos = passenger.Position;
         List<Vector2Int> pathToHighest = GameManager.Instance.FindPathToHighestEmpty(startPos);
-        GameManager.Instance.RemoveOccupantFromGrid(passenger.Position);
+        GameManager.Instance.gridManager.RemoveOccupantFromGrid(passenger.Position);
         bool pathMovementComplete = false;
         bool boardingMovementComplete = false;
         if (pathToHighest.Count > 1)
@@ -59,7 +59,7 @@ public class PassengerController : MonoBehaviour
     {
         Vector2Int startPos = passenger.Position;
         List<Vector2Int> pathToHighest = GameManager.Instance.FindPathToHighestEmpty(startPos);
-        GameManager.Instance.RemoveOccupantFromGrid(passenger.Position);
+        GameManager.Instance.gridManager.RemoveOccupantFromGrid(passenger.Position);
         bool movementComplete = false;
         if (pathToHighest.Count > 1)
         {
