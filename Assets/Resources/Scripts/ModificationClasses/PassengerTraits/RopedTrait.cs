@@ -48,7 +48,7 @@ public class RopedTrait : PassengerTrait
 
         int missingNeighborCount = 0;
         foreach (Vector2Int pos in initialNeighborPositions)
-            if (!GameManager.Instance.gridObjects.ContainsKey(pos))
+            if (clickedPosition == pos)
                 missingNeighborCount++;
 
         int newRopeCount = Mathf.Max(0, ropeCount - missingNeighborCount);

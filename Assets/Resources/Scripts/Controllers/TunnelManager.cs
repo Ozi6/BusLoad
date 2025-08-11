@@ -95,11 +95,7 @@ public class TunnelManager : MonoBehaviour
     public void ResetAllTunnels()
     {
         foreach (var kv in GameManager.Instance.gridObjects)
-        {
             if (kv.Value is Tunnel tunnel)
-            {
                 tunnel.ResetSpawnIndex();
-            }
-        }
     }
 }

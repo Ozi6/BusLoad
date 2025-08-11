@@ -876,12 +876,12 @@ public class GridLayoutWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         minX = EditorGUILayout.IntField("Min X", minX);
-        viewWidth = EditorGUILayout.IntField("View Width", viewWidth);
+        levelData.gridWidth = EditorGUILayout.IntField("View Width", levelData.gridWidth);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         minY = EditorGUILayout.IntField("Min Y", minY);
-        viewHeight = EditorGUILayout.IntField("View Height", viewHeight);
+        levelData.gridHeight = EditorGUILayout.IntField("View Height", levelData.gridHeight);
         EditorGUILayout.EndHorizontal();
 
         if (GUILayout.Button("Auto Fit View"))
@@ -902,10 +902,10 @@ public class GridLayoutWindow : EditorWindow
 
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-        for (int y = minY + viewHeight - 1; y >= minY; y--)
+        for (int y = minY + levelData.gridHeight - 1; y >= minY; y--)
         {
             EditorGUILayout.BeginHorizontal();
-            for (int x = minX; x < minX + viewWidth; x++)
+            for (int x = minX; x < minX + levelData.gridWidth; x++)
             {
                 Vector2Int gridPos = new Vector2Int(x, y);
                 var objInfo = GetObjectAtPosition(gridPos);
@@ -969,6 +969,9 @@ public class GridLayoutWindow : EditorWindow
             }
             EditorGUILayout.EndHorizontal();
         }
+
+        if (GUI.changed)
+            EditorUtility.SetDirty(levelData);
     }
 
     private void AutoFitView()

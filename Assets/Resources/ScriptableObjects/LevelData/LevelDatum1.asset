@@ -87,7 +87,10 @@ MonoBehaviour:
   buses:
   - color: 0
     traitTypes: []
+    traitConfigs: []
   - color: 1
     traitTypes: []
+    traitConfigs: []
   - color: 2
     traitTypes: []
+    traitConfigs: []

@@ -71,8 +71,7 @@ public class GameOverManager : MonoBehaviour
             return false;
 
         foreach (PassengerTrait trait in passenger.traits)
-            if (trait is RopedTrait ropedTrait)
-                if (ropedTrait.GetRopeCount() > 0)
+            if (!trait.CanMove(passenger, BusController.Instance.CurrentBus))
                     return false;
 
         return true;

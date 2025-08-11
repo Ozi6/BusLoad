@@ -1,0 +1,190 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16db6e1831fd0704c8d78a808dce9da6, type: 3}
+  m_Name: LevelDatum5
+  m_EditorClassIdentifier: 
+  levelName: 
+  gridWidth: 5
+  gridHeight: 4
+  gridSpacing: 2
+  passengers:
+  - color: 4
+    gridPosition: {x: 1, y: 2}
+    traitTypes: []
+    traitConfigs: []
+  - color: 3
+    gridPosition: {x: 3, y: 2}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 2, y: 2}
+    traitTypes: []
+    traitConfigs: []
+  walls:
+  - gridPosition: {x: 4, y: 2}
+  - gridPosition: {x: 4, y: 0}
+  - gridPosition: {x: 4, y: 1}
+  - gridPosition: {x: 3, y: 0}
+  - gridPosition: {x: 2, y: 0}
+  - gridPosition: {x: 1, y: 0}
+  - gridPosition: {x: 0, y: 0}
+  - gridPosition: {x: 0, y: 1}
+  - gridPosition: {x: 0, y: 2}
+  tunnels:
+  - gridPosition: {x: 3, y: 1}
+    direction: {x: 0, y: 1}
+    passengerQueue:
+    - color: 0
+      gridPosition: {x: 0, y: 0}
+      traitTypes:
+      - RopedTrait
+      traitConfigs:
+      - traitType: R
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Ro
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Rop
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Rope
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Roped
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: RopedT
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: RopedTr
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: RopedTra
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: RopedTrai
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: RopedTrait
+        intValue: 2
+        boolValue: 0
+        floatValue: 0
+    - color: 1
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 4
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 3
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+  - gridPosition: {x: 1, y: 1}
+    direction: {x: 0, y: 1}
+    passengerQueue:
+    - color: 3
+      gridPosition: {x: 0, y: 0}
+      traitTypes:
+      - BombedTrait
+      traitConfigs:
+      - traitType: B
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Bo
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Bom
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Bomb
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Bombe
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Bombed
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: BombedT
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: BombedTr
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: BombedTra
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: BombedTrai
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: BombedTrait
+        intValue: 5
+        boolValue: 0
+        floatValue: 0
+    - color: 0
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 1
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+  - gridPosition: {x: 2, y: 1}
+    direction: {x: 0, y: 1}
+    passengerQueue:
+    - color: 0
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 4
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 3
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+  buses:
+  - color: 0
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    traitTypes: []
+    traitConfigs: []
+  - color: 4
+    traitTypes: []
+    traitConfigs: []
+  - color: 3
+    traitTypes: []
+    traitConfigs: []
