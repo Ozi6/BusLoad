@@ -241,10 +241,6 @@ MonoBehaviour:
     traitTypes: []
     traitConfigs: []
   - color: 1
-    gridPosition: {x: 8, y: 4}
-    traitTypes: []
-    traitConfigs: []
-  - color: 1
     gridPosition: {x: 8, y: 5}
     traitTypes:
     - ReservedTrait
@@ -308,6 +304,55 @@ MonoBehaviour:
       floatValue: 0
     - traitType: ReservedTrait
       intValue: 0
+      boolValue: 0
+      floatValue: 0
+  - color: 1
+    gridPosition: {x: 8, y: 4}
+    traitTypes:
+    - FrozenTrait
+    traitConfigs:
+    - traitType: F
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Fr
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Fro
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Froz
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Froze
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Frozen
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: FrozenT
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: FrozenTr
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: FrozenTra
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: FrozenTrai
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: FrozenTrait
+      intValue: 2
       boolValue: 0
       floatValue: 0
   walls:
