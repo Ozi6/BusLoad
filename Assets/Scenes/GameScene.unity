@@ -1397,6 +1397,9 @@ MonoBehaviour:
   - traitTypeName: ReservedTrait
     prefab: {fileID: 616364826603683562, guid: d70608bcce500c543aafb4174c5c656d, type: 3}
     poolSize: 2
+  - traitTypeName: FrozenTrait
+    prefab: {fileID: 6016288354808911743, guid: 4be2d77209649f346a2e2f0d64e1164d, type: 3}
+    poolSize: 2
 --- !u!114 &1190774859
 MonoBehaviour:
   m_ObjectHideFlags: 0

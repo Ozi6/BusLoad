@@ -241,6 +241,11 @@ public class LevelDataEditor : Editor
                 config.intValue = EditorGUILayout.IntField("Rope Length", config.intValue == 0 ? 3 : config.intValue);
                 break;
 
+            case "FrozenTrait":
+                EditorGUILayout.LabelField("Frozen Configuration:", EditorStyles.miniLabel);
+                config.intValue = EditorGUILayout.IntField("Frozen Turns", config.intValue == 0 ? 4 : config.intValue);
+                break;
+
             default:
                 EditorGUILayout.LabelField("Generic Configuration:", EditorStyles.miniLabel);
                 config.intValue = EditorGUILayout.IntField("Int Value", config.intValue);
