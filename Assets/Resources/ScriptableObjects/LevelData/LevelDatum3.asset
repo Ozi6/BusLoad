@@ -1,0 +1,377 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16db6e1831fd0704c8d78a808dce9da6, type: 3}
+  m_Name: LevelDatum3
+  m_EditorClassIdentifier: 
+  levelName: 
+  passengers:
+  - color: 0
+    gridPosition: {x: 3, y: 8}
+    traitTypes: []
+    traitConfigs: []
+  - color: 0
+    gridPosition: {x: 4, y: 8}
+    traitTypes: []
+    traitConfigs: []
+  - color: 0
+    gridPosition: {x: 4, y: 6}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 5, y: 8}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 5, y: 7}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 4, y: 7}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 6, y: 5}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 5, y: 4}
+    traitTypes: []
+    traitConfigs: []
+  - color: 1
+    gridPosition: {x: 3, y: 5}
+    traitTypes: []
+    traitConfigs: []
+  - color: 3
+    gridPosition: {x: 3, y: 7}
+    traitTypes: []
+    traitConfigs: []
+  - color: 3
+    gridPosition: {x: 4, y: 3}
+    traitTypes: []
+    traitConfigs: []
+  - color: 3
+    gridPosition: {x: 5, y: 3}
+    traitTypes: []
+    traitConfigs: []
+  - color: 4
+    gridPosition: {x: 5, y: 6}
+    traitTypes:
+    - RopedTrait
+    traitConfigs:
+    - traitType: R
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Ro
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Rop
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Rope
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Roped
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: RopedT
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: RopedTr
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: RopedTra
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: RopedTrai
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: RopedTrait
+      intValue: 3
+      boolValue: 0
+      floatValue: 0
+  - color: 4
+    gridPosition: {x: 4, y: 5}
+    traitTypes: []
+    traitConfigs: []
+  - color: 4
+    gridPosition: {x: 6, y: 3}
+    traitTypes: []
+    traitConfigs: []
+  - color: 4
+    gridPosition: {x: 3, y: 3}
+    traitTypes: []
+    traitConfigs: []
+  - color: 4
+    gridPosition: {x: 3, y: 4}
+    traitTypes: []
+    traitConfigs: []
+  - color: 2
+    gridPosition: {x: 4, y: 4}
+    traitTypes: []
+    traitConfigs: []
+  - color: 2
+    gridPosition: {x: 5, y: 5}
+    traitTypes: []
+    traitConfigs: []
+  - color: 2
+    gridPosition: {x: 6, y: 4}
+    traitTypes:
+    - BombedTrait
+    traitConfigs:
+    - traitType: B
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Bo
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Bom
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Bomb
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Bombe
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: Bombed
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: BombedT
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: BombedTr
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: BombedTra
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: BombedTrai
+      intValue: 0
+      boolValue: 0
+      floatValue: 0
+    - traitType: BombedTrait
+      intValue: 5
+      boolValue: 0
+      floatValue: 0
+  - color: 4
+    gridPosition: {x: 6, y: 6}
+    traitTypes: []
+    traitConfigs: []
+  walls:
+  - gridPosition: {x: 0, y: 5}
+  - gridPosition: {x: 5, y: 2}
+  - gridPosition: {x: 5, y: 1}
+  - gridPosition: {x: 5, y: 0}
+  - gridPosition: {x: 3, y: 0}
+  - gridPosition: {x: 0, y: 8}
+  - gridPosition: {x: 0, y: 9}
+  - gridPosition: {x: 1, y: 9}
+  - gridPosition: {x: 1, y: 8}
+  - gridPosition: {x: 1, y: 6}
+  - gridPosition: {x: 1, y: 7}
+  - gridPosition: {x: 0, y: 7}
+  - gridPosition: {x: 0, y: 6}
+  - gridPosition: {x: 1, y: 5}
+  - gridPosition: {x: 1, y: 4}
+  - gridPosition: {x: 0, y: 4}
+  - gridPosition: {x: 0, y: 3}
+  - gridPosition: {x: 1, y: 3}
+  - gridPosition: {x: 0, y: 2}
+  - gridPosition: {x: 1, y: 1}
+  - gridPosition: {x: 1, y: 2}
+  - gridPosition: {x: 0, y: 1}
+  - gridPosition: {x: 0, y: 0}
+  - gridPosition: {x: 1, y: 0}
+  - gridPosition: {x: 2, y: 1}
+  - gridPosition: {x: 2, y: 2}
+  - gridPosition: {x: 3, y: 2}
+  - gridPosition: {x: 4, y: 2}
+  - gridPosition: {x: 4, y: 1}
+  - gridPosition: {x: 3, y: 1}
+  - gridPosition: {x: 2, y: 0}
+  - gridPosition: {x: 2, y: 3}
+  - gridPosition: {x: 2, y: 4}
+  - gridPosition: {x: 2, y: 5}
+  - gridPosition: {x: 2, y: 7}
+  - gridPosition: {x: 2, y: 6}
+  - gridPosition: {x: 2, y: 8}
+  - gridPosition: {x: 2, y: 9}
+  - gridPosition: {x: 4, y: 0}
+  - gridPosition: {x: 6, y: 0}
+  - gridPosition: {x: 6, y: 1}
+  - gridPosition: {x: 6, y: 2}
+  - gridPosition: {x: 7, y: 2}
+  - gridPosition: {x: 7, y: 1}
+  - gridPosition: {x: 8, y: 1}
+  - gridPosition: {x: 9, y: 2}
+  - gridPosition: {x: 8, y: 2}
+  - gridPosition: {x: 9, y: 1}
+  - gridPosition: {x: 9, y: 0}
+  - gridPosition: {x: 8, y: 0}
+  - gridPosition: {x: 7, y: 0}
+  - gridPosition: {x: 7, y: 3}
+  - gridPosition: {x: 7, y: 4}
+  - gridPosition: {x: 7, y: 5}
+  - gridPosition: {x: 7, y: 6}
+  - gridPosition: {x: 7, y: 7}
+  - gridPosition: {x: 7, y: 8}
+  - gridPosition: {x: 7, y: 9}
+  - gridPosition: {x: 8, y: 9}
+  - gridPosition: {x: 9, y: 9}
+  - gridPosition: {x: 9, y: 8}
+  - gridPosition: {x: 8, y: 8}
+  - gridPosition: {x: 8, y: 7}
+  - gridPosition: {x: 9, y: 7}
+  - gridPosition: {x: 9, y: 6}
+  - gridPosition: {x: 8, y: 6}
+  - gridPosition: {x: 8, y: 5}
+  - gridPosition: {x: 9, y: 5}
+  - gridPosition: {x: 9, y: 4}
+  - gridPosition: {x: 8, y: 4}
+  - gridPosition: {x: 8, y: 3}
+  - gridPosition: {x: 9, y: 3}
+  tunnels:
+  - gridPosition: {x: 3, y: 6}
+    direction: {x: 1, y: 0}
+    passengerQueue:
+    - color: 3
+      gridPosition: {x: 0, y: 0}
+      traitTypes:
+      - CloakedTrait
+      traitConfigs:
+      - traitType: C
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Ca
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cap
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cape
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Caped
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CapedT
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CapedTr
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CapedTra
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CapedTrai
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CapedTrait
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cl
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Clo
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cloa
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cloak
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cloake
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: Cloaked
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CloakedT
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CloakedTr
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CloakedTra
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CloakedTrai
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+      - traitType: CloakedTrait
+        intValue: 0
+        boolValue: 0
+        floatValue: 0
+    - color: 3
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 3
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+  buses:
+  - color: 4
+    traitTypes: []
+  - color: 1
+    traitTypes: []
+  - color: 0
+    traitTypes: []
+  - color: 3
+    traitTypes: []
+  - color: 2
+    traitTypes: []
+  - color: 3
+    traitTypes: []
+  - color: 4
+    traitTypes: []
+  - color: 1
+    traitTypes: []

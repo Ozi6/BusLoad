@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 [CustomEditor(typeof(LevelData))]
 public class LevelDataEditor : Editor
@@ -373,10 +374,11 @@ public class LevelDataEditor : Editor
         EditorGUI.indentLevel++;
         for (int p = 0; p < tunnel.passengerQueue.Count; p++)
         {
+            PassengerData pass = tunnel.passengerQueue[p];
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.BeginHorizontal();
 
-            GUI.backgroundColor = GetColorFromEnum(tunnel.passengerQueue[p].color);
+            GUI.backgroundColor = GetColorFromEnum(pass.color);
             EditorGUILayout.LabelField("", EditorStyles.helpBox, GUILayout.Width(15), GUILayout.Height(15));
             GUI.backgroundColor = Color.white;
 
@@ -410,24 +412,28 @@ public class LevelDataEditor : Editor
 
             EditorGUILayout.EndHorizontal();
 
-            tunnel.passengerQueue[p].color = (PassengerColor)EditorGUILayout.EnumPopup("Color", tunnel.passengerQueue[p].color);
+            pass.color = (PassengerColor)EditorGUILayout.EnumPopup("Color", pass.color);
 
             EditorGUILayout.LabelField("Traits:", EditorStyles.miniLabel);
             EditorGUI.indentLevel++;
-            for (int t = 0; t < tunnel.passengerQueue[p].traitTypes.Count; t++)
+            for (int t = 0; t < pass.traitTypes.Count; t++)
             {
                 EditorGUILayout.BeginHorizontal();
-                tunnel.passengerQueue[p].traitTypes[t] = EditorGUILayout.TextField(tunnel.passengerQueue[p].traitTypes[t]);
+                pass.traitTypes[t] = EditorGUILayout.TextField(pass.traitTypes[t]);
                 if (GUILayout.Button("-", GUILayout.Width(20)))
                 {
-                    tunnel.passengerQueue[p].traitTypes.RemoveAt(t);
+                    pass.traitTypes.RemoveAt(t);
+                    var configToRemove = pass.traitConfigs.FirstOrDefault(c => c.traitType == pass.traitTypes[t]);
+                    if (configToRemove != null)
+                        pass.traitConfigs.Remove(configToRemove);
                     t--;
                 }
                 EditorGUILayout.EndHorizontal();
+                DrawTraitConfiguration(pass, pass.traitTypes[t]);
             }
 
             if (GUILayout.Button("Add Trait", GUILayout.Height(16)))
-                tunnel.passengerQueue[p].traitTypes.Add("");
+                pass.traitTypes.Add("");
 
             EditorGUI.indentLevel--;
             EditorGUILayout.EndVertical();
@@ -712,14 +718,23 @@ public class GridLayoutWindow : EditorWindow
 {
     private LevelData levelData;
     private Vector2 scrollPos;
-    private int gridWidth = 10;
-    private int gridHeight = 10;
+    private int minX = 0;
+    private int minY = 0;
+    private int viewWidth = 10;
+    private int viewHeight = 10;
     private ObjectType brushType = ObjectType.Passenger;
     private PassengerColor brushColor = PassengerColor.Red;
     private SpawnDirection brushDirection = SpawnDirection.Up;
 
+    private bool selectionMode = false;
+    private SelectionShape selectionShape = SelectionShape.Rectangle;
+    private Vector2Int? startPos = null;
+    private Vector2Int? endPos = null;
+    private HashSet<Vector2Int> selectedCells = new HashSet<Vector2Int>();
+
     private enum ObjectType { Passenger, Wall, Tunnel }
     private enum SpawnDirection { Up, Down, Left, Right }
+    private enum SelectionShape { Rectangle, Line }
 
     public static void ShowWindow(LevelData data)
     {
@@ -737,9 +752,17 @@ public class GridLayoutWindow : EditorWindow
         }
 
         EditorGUILayout.BeginHorizontal();
-        gridWidth = EditorGUILayout.IntField("Grid Width", gridWidth);
-        gridHeight = EditorGUILayout.IntField("Grid Height", gridHeight);
+        minX = EditorGUILayout.IntField("Min X", minX);
+        viewWidth = EditorGUILayout.IntField("View Width", viewWidth);
         EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        minY = EditorGUILayout.IntField("Min Y", minY);
+        viewHeight = EditorGUILayout.IntField("View Height", viewHeight);
+        EditorGUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Auto Fit View"))
+            AutoFitView();
 
         brushType = (ObjectType)EditorGUILayout.EnumPopup("Brush Type", brushType);
 
@@ -748,27 +771,57 @@ public class GridLayoutWindow : EditorWindow
         if (brushType == ObjectType.Tunnel)
             brushDirection = (SpawnDirection)EditorGUILayout.EnumPopup("Brush Direction", brushDirection);
 
+        selectionMode = EditorGUILayout.Toggle("Selection Mode", selectionMode);
+        if (selectionMode)
+            selectionShape = (SelectionShape)EditorGUILayout.EnumPopup("Selection Shape", selectionShape);
+
         EditorGUILayout.Space();
 
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-        for (int y = gridHeight - 1; y >= 0; y--)
+        for (int y = minY + viewHeight - 1; y >= minY; y--)
         {
             EditorGUILayout.BeginHorizontal();
-            for (int x = 0; x < gridWidth; x++)
+            for (int x = minX; x < minX + viewWidth; x++)
             {
                 Vector2Int gridPos = new Vector2Int(x, y);
-                var obj = GetObjectAtPosition(gridPos);
-                Color buttonColor = obj.HasValue ? obj.Value.Item2 : Color.white;
+                var objInfo = GetObjectAtPosition(gridPos);
+                string objType = objInfo?.Item1;
+                Color buttonColor = objInfo.HasValue ? objInfo.Value.Item2 : Color.white;
+                Vector2Int? dir = objInfo?.Item3;
+                string symbol = "";
+                if (objType == "Passenger") symbol = "P";
+                else if (objType == "Wall") symbol = "W";
+                else if (objType == "Tunnel" && dir.HasValue) symbol = GetArrowFromDir(dir.Value);
+                string label = symbol;
+                if (selectedCells.Contains(gridPos))
+                {
+                    label = "*" + symbol;
+                    if (string.IsNullOrEmpty(symbol)) label = "*";
+                }
+
                 GUI.backgroundColor = buttonColor;
 
-                if (GUILayout.Button("", GUILayout.Width(30), GUILayout.Height(30)))
+                if (GUILayout.Button(label, GUILayout.Width(30), GUILayout.Height(30)))
                 {
-                    if (obj.HasValue)
-                        RemoveObjectAtPosition(gridPos, obj.Value.Item1);
+                    if (selectionMode)
+                    {
+                        if (!startPos.HasValue)
+                            startPos = gridPos;
+                        else if (!endPos.HasValue)
+                        {
+                            endPos = gridPos;
+                            UpdateSelectedCells();
+                        }
+                    }
                     else
-                        PlaceBrushAtPosition(gridPos);
-                    EditorUtility.SetDirty(levelData);
+                    {
+                        if (objInfo.HasValue)
+                            RemoveObjectAtPosition(gridPos, objInfo.Value.Item1);
+                        else
+                            PlaceBrushAtPosition(gridPos);
+                        EditorUtility.SetDirty(levelData);
+                    }
                 }
 
                 GUI.backgroundColor = Color.white;
@@ -777,21 +830,66 @@ public class GridLayoutWindow : EditorWindow
         }
 
         EditorGUILayout.EndScrollView();
+
+        if (selectionMode && endPos.HasValue)
+        {
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Move Up")) MoveSelected(new Vector2Int(0, 1));
+            if (GUILayout.Button("Move Down")) MoveSelected(new Vector2Int(0, -1));
+            if (GUILayout.Button("Move Left")) MoveSelected(new Vector2Int(-1, 0));
+            if (GUILayout.Button("Move Right")) MoveSelected(new Vector2Int(1, 0));
+            if (GUILayout.Button("Clear Selection"))
+            {
+                startPos = null;
+                endPos = null;
+                selectedCells.Clear();
+            }
+            EditorGUILayout.EndHorizontal();
+        }
     }
 
-    private (string, Color)? GetObjectAtPosition(Vector2Int gridPos)
+    private void AutoFitView()
+    {
+        if (levelData == null) return;
+
+        int min_x = int.MaxValue, min_y = int.MaxValue, max_x = int.MinValue, max_y = int.MinValue;
+
+        Action<Vector2Int> update = (pos) =>
+        {
+            min_x = Mathf.Min(min_x, pos.x);
+            min_y = Mathf.Min(min_y, pos.y);
+            max_x = Mathf.Max(max_x, pos.x);
+            max_y = Mathf.Max(max_y, pos.y);
+        };
+
+        foreach (var p in levelData.passengers) update(p.gridPosition);
+        foreach (var w in levelData.walls) update(w.gridPosition);
+        foreach (var t in levelData.tunnels) update(t.gridPosition);
+
+        if (min_x == int.MaxValue)
+        { // no objects
+            minX = 0; minY = 0; viewWidth = 10; viewHeight = 10; return;
+        }
+
+        minX = min_x - 1;
+        minY = min_y - 1;
+        viewWidth = max_x - min_x + 3;
+        viewHeight = max_y - min_y + 3;
+    }
+
+    private (string, Color, Vector2Int?)? GetObjectAtPosition(Vector2Int gridPos)
     {
         PassengerData passenger = levelData.passengers.FirstOrDefault(p => p.gridPosition == gridPos);
         if (passenger != null)
-            return ("Passenger", GetColorFromEnum(passenger.color));
+            return ("Passenger", GetColorFromEnum(passenger.color), null);
 
         WallData wall = levelData.walls.FirstOrDefault(w => w.gridPosition == gridPos);
         if (wall != null)
-            return ("Wall", Color.gray);
+            return ("Wall", Color.gray, null);
 
         TunnelData tunnel = levelData.tunnels.FirstOrDefault(t => t.gridPosition == gridPos);
         if (tunnel != null)
-            return ("Tunnel", Color.blue);
+            return ("Tunnel", Color.blue, tunnel.direction);
 
         return null;
     }
@@ -879,6 +977,82 @@ public class GridLayoutWindow : EditorWindow
             PassengerColor.Purple => new Color(0.5f, 0f, 1f),
             _ => Color.white
         };
+    }
+
+    private string GetArrowFromDir(Vector2Int dir)
+    {
+        if (dir == new Vector2Int(0, 1)) return "↑";
+        if (dir == new Vector2Int(0, -1)) return "↓";
+        if (dir == new Vector2Int(-1, 0)) return "←";
+        if (dir == new Vector2Int(1, 0)) return "→";
+        return "?";
+    }
+
+    private void UpdateSelectedCells()
+    {
+        if (startPos.HasValue && endPos.HasValue)
+        {
+            var cells = GetSelectedCells(startPos.Value, endPos.Value, selectionShape);
+            selectedCells = new HashSet<Vector2Int>(cells);
+        }
+    }
+
+    private List<Vector2Int> GetSelectedCells(Vector2Int start, Vector2Int end, SelectionShape sh)
+    {
+        if (sh == SelectionShape.Rectangle)
+        {
+            List<Vector2Int> cells = new List<Vector2Int>();
+            int minX = Mathf.Min(start.x, end.x);
+            int maxX = Mathf.Max(start.x, end.x);
+            int minY = Mathf.Min(start.y, end.y);
+            int maxY = Mathf.Max(start.y, end.y);
+            for (int x = minX; x <= maxX; x++)
+                for (int y = minY; y <= maxY; y++)
+                    cells.Add(new Vector2Int(x, y));
+            return cells;
+        }
+        else
+        {
+            List<Vector2Int> points = new List<Vector2Int>();
+            int dx = Mathf.Abs(end.x - start.x);
+            int dy = Mathf.Abs(end.y - start.y);
+            int sx = start.x < end.x ? 1 : -1;
+            int sy = start.y < end.y ? 1 : -1;
+            int err = dx - dy;
+            int x = start.x;
+            int y = start.y;
+            while (true)
+            {
+                points.Add(new Vector2Int(x, y));
+                if (x == end.x && y == end.y) break;
+                int e2 = 2 * err;
+                if (e2 > -dy) { err -= dy; x += sx; }
+                if (e2 < dx) { err += dx; y += sy; }
+            }
+            return points;
+        }
+    }
+
+    private void MoveSelected(Vector2Int delta)
+    {
+        foreach (var pos in selectedCells)
+        {
+            var p = levelData.passengers.FirstOrDefault(pp => pp.gridPosition == pos);
+            if (p != null) p.gridPosition += delta;
+
+            var w = levelData.walls.FirstOrDefault(ww => ww.gridPosition == pos);
+            if (w != null) w.gridPosition += delta;
+
+            var t = levelData.tunnels.FirstOrDefault(tt => tt.gridPosition == pos);
+            if (t != null) t.gridPosition += delta;
+        }
+
+        var newSelected = new HashSet<Vector2Int>();
+        foreach (var cell in selectedCells)
+            newSelected.Add(cell + delta);
+        selectedCells = newSelected;
+
+        EditorUtility.SetDirty(levelData);
     }
 }
 #endif
