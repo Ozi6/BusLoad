@@ -66,10 +66,8 @@ public class BombedTrait : PassengerTrait
         isExploded = true;
         isActivated = false;
         UpdateVisualIndicator();
-        OnBombExploded();
+        GameOverManager.Instance.TriggerGameOver();
     }
-
-    protected virtual void OnBombExploded() { }
 
     public int GetCurrentCountdown() => currentCountdown;
     public bool IsActivated() => isActivated;

@@ -150,4 +150,9 @@ public class MovementManager : MonoBehaviour
             GameManager.Instance.gridParent.transform.position.z + gridPos.y * GRID_SPACING
         );
     }
+
+    public List<GameObject> GetAllMovingObjects()
+    {
+        return new List<GameObject>(activeMovements.Keys);
+    }
 }

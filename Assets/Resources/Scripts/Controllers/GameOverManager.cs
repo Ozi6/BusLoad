@@ -93,6 +93,16 @@ public class GameOverManager : MonoBehaviour
         if (gameOverUI != null)
             gameOverUI.SetActive(false);
 
+        List<GameObject> movingObjects = MovementManager.Instance.GetAllMovingObjects();
+        foreach (GameObject obj in movingObjects)
+        {
+            if (obj != null)
+            {
+                MovementManager.Instance.CancelMovement(obj);
+                Destroy(obj);
+            }
+        }
+
         QueueManager.Instance.EmptyQueue();
         GameManager.Instance.RespawnPassengers();
     }
