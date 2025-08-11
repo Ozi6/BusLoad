@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16db6e1831fd0704c8d78a808dce9da6, type: 3}
   m_Name: LevelDatum1
   m_EditorClassIdentifier: 
+  levelName: 
+  gridWidth: 7
+  gridHeight: 8
+  gridSpacing: 2
   passengers:
   - color: 1
     gridPosition: {x: 0, y: 1}

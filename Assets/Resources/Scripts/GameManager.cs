@@ -12,8 +12,10 @@ public class GameManager : MonoBehaviour
     public GameObject gridSquarePrefab;
     public Transform gridParent;
     public Dictionary<Vector2Int, MapObject> gridObjects = new Dictionary<Vector2Int, MapObject>();
-    private const int GRID_SIZE = 12;
-    private const float GRID_SPACING = 2f;
+
+    private int GridWidth => levelData?.gridWidth ?? 12;
+    private int GridHeight => levelData?.gridHeight ?? 12;
+    private float GridSpacing => levelData?.gridSpacing ?? 2f;
 
     private void Awake() => Instance = this;
 
@@ -31,11 +33,16 @@ public class GameManager : MonoBehaviour
             return;
         if (gridParent == null)
             gridParent = new GameObject("GridParent").transform;
-        for (int x = 0; x < GRID_SIZE; x++)
+
+        for (int x = 0; x < GridWidth; x++)
         {
-            for (int y = 0; y < GRID_SIZE; y++)
+            for (int y = 0; y < GridHeight; y++)
             {
-                Vector3 worldPos = new Vector3(gridParent.transform.position.x + x * GRID_SPACING, 0.1f, gridParent.transform.position.z + y * GRID_SPACING);
+                Vector3 worldPos = new Vector3(
+                    gridParent.transform.position.x + x * GridSpacing,
+                    0.1f,
+                    gridParent.transform.position.z + y * GridSpacing
+                );
                 GameObject gridSquare = Instantiate(gridSquarePrefab, worldPos, Quaternion.identity, gridParent);
                 gridSquare.name = $"GridSquare{x}_{y}";
                 gridSquare.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
@@ -64,16 +71,16 @@ public class GameManager : MonoBehaviour
 
         foreach (PassengerData data in levelData.passengers)
         {
-            if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
-                data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
+            if (data.gridPosition.x < 0 || data.gridPosition.x >= GridWidth ||
+                data.gridPosition.y < 0 || data.gridPosition.y >= GridHeight)
                 continue;
 
             SpawnPassenger(data);
         }
         foreach (WallData data in levelData.walls)
         {
-            if (data.gridPosition.x < 0 || data.gridPosition.x >= GRID_SIZE ||
-                data.gridPosition.y < 0 || data.gridPosition.y >= GRID_SIZE)
+            if (data.gridPosition.x < 0 || data.gridPosition.x >= GridWidth ||
+                data.gridPosition.y < 0 || data.gridPosition.y >= GridHeight)
                 continue;
 
             SpawnWall(data);
@@ -110,9 +117,9 @@ public class GameManager : MonoBehaviour
         }
 
         Vector3 worldPos = new Vector3(
-            gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
+            gridParent.transform.position.x + data.gridPosition.x * GridSpacing,
             0.5f,
-            gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
+            gridParent.transform.position.z + data.gridPosition.y * GridSpacing
         );
         passengerObj.transform.position = worldPos;
         gridObjects[data.gridPosition] = passenger;
@@ -125,9 +132,9 @@ public class GameManager : MonoBehaviour
         wall.Position = data.gridPosition;
 
         Vector3 worldPos = new Vector3(
-            gridParent.transform.position.x + data.gridPosition.x * GRID_SPACING,
+            gridParent.transform.position.x + data.gridPosition.x * GridSpacing,
             0.5f,
-            gridParent.transform.position.z + data.gridPosition.y * GRID_SPACING
+            gridParent.transform.position.z + data.gridPosition.y * GridSpacing
         );
         wallObj.transform.position = worldPos;
         gridObjects[data.gridPosition] = wall;
@@ -149,12 +156,12 @@ public class GameManager : MonoBehaviour
 
     public Vector2Int GetGridBounds()
     {
-        return new Vector2Int(GRID_SIZE, GRID_SIZE);
+        return new Vector2Int(GridWidth, GridHeight);
     }
 
     public List<Vector2Int> FindPathToHighestEmpty(Vector2Int startPos)
     {
-        AStarPathfinder pathfinder = new AStarPathfinder(GRID_SIZE, this);
+        AStarPathfinder pathfinder = new AStarPathfinder(GridWidth, GridHeight, this);
         return pathfinder.FindPathToHighestEmptySquare(startPos);
     }
 }

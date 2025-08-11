@@ -45,6 +45,8 @@ public class LevelDataEditor : Editor
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("Level Data Editor", EditorStyles.boldLabel);
 
+        DrawGridSettingsSection();
+        EditorGUILayout.Space(10);
         DrawGridEditingSection();
         EditorGUILayout.Space(10);
         DrawPassengersSection();
@@ -62,6 +64,18 @@ public class LevelDataEditor : Editor
             EditorUtility.SetDirty(levelData);
             serializedObject.ApplyModifiedProperties();
         }
+    }
+
+    private void DrawGridSettingsSection()
+    {
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("Grid Settings", EditorStyles.boldLabel);
+
+        levelData.gridWidth = EditorGUILayout.IntField("Grid Width", levelData.gridWidth);
+        levelData.gridHeight = EditorGUILayout.IntField("Grid Height", levelData.gridHeight);
+        levelData.gridSpacing = EditorGUILayout.FloatField("Grid Spacing", levelData.gridSpacing);
+
+        EditorGUILayout.EndVertical();
     }
 
     private void DrawGridEditingSection()

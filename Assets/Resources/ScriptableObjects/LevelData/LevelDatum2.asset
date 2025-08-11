@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: LevelDatum2
   m_EditorClassIdentifier: 
   levelName: 
+  gridWidth: 10
+  gridHeight: 10
+  gridSpacing: 2
   passengers:
   - color: 0
     gridPosition: {x: 3, y: 8}

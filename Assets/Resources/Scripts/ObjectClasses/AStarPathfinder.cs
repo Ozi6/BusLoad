@@ -4,13 +4,20 @@ using UnityEngine;
 
 public class AStarPathfinder
 {
-    private readonly int gridSize;
+    private readonly int gridWidth;
+    private readonly int gridHeight;
     private readonly GameManager gameManager;
 
-    public AStarPathfinder(int gridSize, GameManager gameManager)
+    public AStarPathfinder(int gridWidth, int gridHeight, GameManager gameManager)
     {
-        this.gridSize = gridSize;
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
         this.gameManager = gameManager;
+    }
+
+    public AStarPathfinder(int gridSize, GameManager gameManager)
+        : this(gridSize, gridSize, gameManager)
+    {
     }
 
     public List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
@@ -67,12 +74,12 @@ public class AStarPathfinder
     {
         Vector2Int bestPosition = fromPosition;
         int highestY = fromPosition.y;
-        float centerX = (gridSize - 1) / 2f;
+        float centerX = (gridWidth - 1) / 2f;
         float bestDistanceToCenter = float.MaxValue;
 
-        for (int x = 0; x < gridSize; x++)
+        for (int x = 0; x < gridWidth; x++)
         {
-            for (int y = gridSize - 1; y >= 0; y--)
+            for (int y = gridHeight - 1; y >= 0; y--)
             {
                 Vector2Int position = new Vector2Int(x, y);
 
@@ -122,8 +129,8 @@ public class AStarPathfinder
 
     private bool IsValidPosition(Vector2Int position)
     {
-        return position.x >= 0 && position.x < gridSize &&
-               position.y >= 0 && position.y < gridSize;
+        return position.x >= 0 && position.x < gridWidth &&
+               position.y >= 0 && position.y < gridHeight;
     }
 
     private bool IsWalkable(Vector2Int position)
