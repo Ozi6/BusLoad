@@ -3,7 +3,14 @@ using UnityEngine;
 public abstract class BusTrait : MonoBehaviour
 {
     protected Bus owner;
+
     public abstract bool CanAcceptPassenger(Bus bus, Passenger passenger);
+
+    public virtual void OnBusBoarded(Bus bus, Passenger passenger)
+    {
+
+    }
+
     protected GameObject visualIndicator;
 
     protected virtual void OnEnable()

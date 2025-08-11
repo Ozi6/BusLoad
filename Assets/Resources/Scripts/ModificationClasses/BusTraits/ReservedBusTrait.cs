@@ -1,6 +1,7 @@
 public class ReservedBusTrait : BusTrait
 {
     private int reservedPassengerCapacity = 1;
+
     private void Awake()
     {
         owner = GetComponent<Bus>();
@@ -20,7 +21,6 @@ public class ReservedBusTrait : BusTrait
     public override bool CanAcceptPassenger(Bus bus, Passenger passenger)
     {
         ReservedTrait passengerReservedTrait = passenger.GetComponent<ReservedTrait>();
-
         int currentReservedCount = GetReservedPassengerCount(bus);
         int busCapacity = bus.passengerPositions.Length;
         int currentPassengerCount = bus.Passengers.Count;
@@ -35,11 +35,14 @@ public class ReservedBusTrait : BusTrait
 
         int reservedLeft = reservedPassengerCapacity - currentReservedCount;
         int freeSpots = busCapacity - currentPassengerCount;
-
         if (freeSpots > reservedLeft)
             return passenger.Color == bus.Color;
-
         return false;
+    }
+
+    public override void OnBusBoarded(Bus bus, Passenger passenger)
+    {
+        UpdateVisualIndicator();
     }
 
     private int GetReservedPassengerCount(Bus bus)

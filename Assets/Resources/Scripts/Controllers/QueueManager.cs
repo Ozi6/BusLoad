@@ -68,22 +68,26 @@ public class QueueManager : MonoBehaviour
     public void ProcessQueueForBus(Bus bus)
     {
         List<int> toRemove = new List<int>();
+        int processedCount = 0;
 
-        for (int i = 0; i < queuedPassengers.Length; i++)
+        for (int i = 0; i < queuedPassengers.Length && processedCount < 3; i++)
         {
             if (queuedPassengers[i] != null && queuedPassengers[i].CanBoardBus(bus))
             {
+                if (!bus.TryReserveSpot(queuedPassengers[i]))
+                    break;
+
                 Passenger passenger = queuedPassengers[i];
                 queuedPassengers[i] = null;
                 toRemove.Add(i);
+                processedCount++;
 
                 if (MovementManager.Instance.HasActiveMovement(passenger.gameObject))
                     MovementManager.Instance.CancelMovement(passenger.gameObject);
 
-                MovementManager.Instance.MoveGradual(passenger.gameObject, bus.transform, 0f, () => { bus.AddPassenger(passenger); });
-
-                if (bus.Passengers.Count >= 3)
-                    break;
+                MovementManager.Instance.MoveGradual(passenger.gameObject, bus.transform, 0f, () => {
+                    bus.AddPassenger(passenger);
+                });
             }
         }
 
