@@ -68,15 +68,15 @@ MonoBehaviour:
   - gridPosition: {x: 0, y: 0}
     direction: {x: 0, y: 1}
     passengerQueue:
-    - color: 0
-      gridPosition: {x: 0, y: 0}
-      traitTypes: []
-      traitConfigs: []
     - color: 2
       gridPosition: {x: 0, y: 0}
       traitTypes: []
       traitConfigs: []
     - color: 1
+      gridPosition: {x: 0, y: 0}
+      traitTypes: []
+      traitConfigs: []
+    - color: 0
       gridPosition: {x: 0, y: 0}
       traitTypes: []
       traitConfigs: []

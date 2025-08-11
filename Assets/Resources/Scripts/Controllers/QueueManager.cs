@@ -22,6 +22,8 @@ public class QueueManager : MonoBehaviour
             return false;
 
         queuedPassengers[emptySlot] = passenger;
+        if (IsQueueFull())
+            GameOverManager.Instance.CheckGameOverConditions();
         return true;
     }
 
@@ -120,11 +122,16 @@ public class QueueManager : MonoBehaviour
         return GetLeftmostEmptySlot() == -1;
     }
 
-    public void RemoveOldestIfFull()
+    public void EmptyQueue()
     {
-        if (!IsQueueFull())
-            return;
-        queuedPassengers[0] = null;
-        CompactQueue();
+        for (int i = 0; i < queuedPassengers.Length; i++)
+        {
+            if (queuedPassengers[i] != null)
+            {
+                if (MovementManager.Instance.HasActiveMovement(queuedPassengers[i].gameObject))
+                    MovementManager.Instance.CancelMovement(queuedPassengers[i].gameObject);
+                queuedPassengers[i] = null;
+            }
+        }
     }
 }

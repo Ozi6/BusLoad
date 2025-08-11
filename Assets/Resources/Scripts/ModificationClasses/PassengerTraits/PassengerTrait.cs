@@ -49,5 +49,5 @@ public abstract class PassengerTrait : MonoBehaviour
     public abstract bool CanBoard(Passenger passenger, Bus bus);
 
     protected virtual void OnNearbyPassengerSelected(Vector2Int position) { }
-    protected virtual void OnPassengerReachedByFlood(Passenger passenger) { } // New virtual method for flood fill activation
+    protected virtual void OnPassengerReachedByFlood(Passenger passenger) { }
 }
