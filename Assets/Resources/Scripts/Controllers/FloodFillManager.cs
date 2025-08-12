@@ -4,7 +4,9 @@ using UnityEngine;
 public class FloodFillManager : MonoBehaviour
 {
     public static FloodFillManager Instance;
+
     private void Awake() => Instance = this;
+
     public void FloodFillInteractable(Vector2Int startPos)
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
@@ -12,6 +14,7 @@ public class FloodFillManager : MonoBehaviour
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         queue.Enqueue(startPos);
         visited[startPos] = true;
+
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
@@ -19,8 +22,7 @@ public class FloodFillManager : MonoBehaviour
             {
                 MapObject obj = GameManager.Instance.gridObjects[current];
                 obj.OnReachedByFlood();
-                if (obj.BlocksFlood)
-                    continue;
+                if (obj.BlocksFlood) continue;
             }
             foreach (Vector2Int dir in DirectionVectors.CardinalDirections)
             {
@@ -33,13 +35,14 @@ public class FloodFillManager : MonoBehaviour
             }
         }
     }
+
     public void InitializeInteractablePassengers()
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
         HashSet<Vector2Int> globallyReached = new HashSet<Vector2Int>();
-        List<Vector2Int> highestPassengerPositions = FindHighestPassengerPositions();
+        List<Vector2Int> startingPositions = FindHighestStartingPositions();
 
-        foreach (Vector2Int startPos in highestPassengerPositions)
+        foreach (Vector2Int startPos in startingPositions)
         {
             if (globallyReached.Contains(startPos)) continue;
             HashSet<Vector2Int> reachedInThisFlood = PerformInitializationFloodFill(startPos);
@@ -47,38 +50,29 @@ public class FloodFillManager : MonoBehaviour
                 globallyReached.Add(pos);
         }
     }
-    private List<Vector2Int> FindHighestPassengerPositions()
+
+    private List<Vector2Int> FindHighestStartingPositions()
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
-        List<Vector2Int> highestPassengers = new List<Vector2Int>();
+        List<Vector2Int> startingPositions = new List<Vector2Int>();
         int maxY = gridSize.y - 1;
 
-        for (int x = 0; x < gridSize.x; x++)
-        {
-            Vector2Int pos = new Vector2Int(x, maxY);
-            if (GameManager.Instance.gridManager.HasOccupantAt(pos))
-            {
-                MapObject obj = GameManager.Instance.gridObjects[pos];
-                if (obj is Passenger)
-                    highestPassengers.Add(pos);
-            }
-        }
-
-        return highestPassengers;
-    }
-    private List<Vector2Int> FindHighestEmptyPositions()
-    {
-        Vector2Int gridSize = GameManager.Instance.GetGridBounds();
-        List<Vector2Int> highestEmpty = new List<Vector2Int>();
-        int maxY = gridSize.y - 1;
         for (int x = 0; x < gridSize.x; x++)
         {
             Vector2Int pos = new Vector2Int(x, maxY);
             if (!GameManager.Instance.gridManager.HasOccupantAt(pos))
-                highestEmpty.Add(pos);
+                startingPositions.Add(pos);
+            else
+            {
+                MapObject obj = GameManager.Instance.gridObjects[pos];
+                if (obj is Passenger)
+                    startingPositions.Add(pos);
+            }
         }
-        return highestEmpty;
+
+        return startingPositions;
     }
+
     private HashSet<Vector2Int> PerformInitializationFloodFill(Vector2Int startPos)
     {
         Vector2Int gridSize = GameManager.Instance.GetGridBounds();
@@ -86,6 +80,16 @@ public class FloodFillManager : MonoBehaviour
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         queue.Enqueue(startPos);
         visited.Add(startPos);
+
+        if (GameManager.Instance.gridManager.HasOccupantAt(startPos))
+        {
+            MapObject obj = GameManager.Instance.gridObjects[startPos];
+            obj.OnReachedByFlood();
+            if (obj is Passenger passenger)
+                PassengerEvents.TriggerPassengerReachedByFlood(passenger);
+            if (obj.BlocksFlood) return visited;
+        }
+
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
@@ -94,9 +98,11 @@ public class FloodFillManager : MonoBehaviour
                 MapObject obj = GameManager.Instance.gridObjects[current];
                 obj.OnReachedByFlood();
                 if (obj is Passenger passenger)
+                {
+                    Debug.Log($"Passenger at {current} made interactable.");
                     PassengerEvents.TriggerPassengerReachedByFlood(passenger);
-                if (obj.BlocksFlood)
-                    continue;
+                }
+                if (obj.BlocksFlood) continue;
             }
             foreach (Vector2Int dir in DirectionVectors.CardinalDirections)
             {
@@ -110,6 +116,7 @@ public class FloodFillManager : MonoBehaviour
         }
         return visited;
     }
+
     private bool IsValidPosition(Vector2Int pos, Vector2Int gridSize)
     {
         return pos.x >= 0 && pos.x < gridSize.x && pos.y >= 0 && pos.y < gridSize.y;

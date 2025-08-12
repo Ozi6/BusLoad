@@ -76,15 +76,10 @@ public class QueueManager : MonoBehaviour
             {
                 if (!bus.TryReserveSpot(queuedPassengers[i]))
                     break;
-
                 Passenger passenger = queuedPassengers[i];
                 queuedPassengers[i] = null;
                 toRemove.Add(i);
                 processedCount++;
-
-                if (MovementManager.Instance.HasActiveMovement(passenger.gameObject))
-                    MovementManager.Instance.CancelMovement(passenger.gameObject);
-
                 MovementManager.Instance.MoveGradual(passenger.gameObject, bus.transform, 0f, () => {
                     bus.AddPassenger(passenger);
                 });

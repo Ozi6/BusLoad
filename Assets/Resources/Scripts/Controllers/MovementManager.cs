@@ -7,6 +7,7 @@ public class MovementManager : MonoBehaviour
     public static MovementManager Instance;
     public float defaultMoveSpeed = 15f;
     private Dictionary<GameObject, Coroutine> activeMovements = new Dictionary<GameObject, Coroutine>();
+    private Dictionary<GameObject, Queue<MovementRequest>> queuedMovements = new Dictionary<GameObject, Queue<MovementRequest>>();
     private const float GRID_SPACING = 2f;
 
     private void Awake()
@@ -24,30 +25,16 @@ public class MovementManager : MonoBehaviour
     {
         if (obj == null)
             return;
-
-        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
-        {
-            StopCoroutine(activeMovements[obj]);
-            activeMovements.Remove(obj);
-        }
-
-        Coroutine newMovement = StartCoroutine(MoveToPosition(obj, targetPosition, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
-        activeMovements[obj] = newMovement;
+        var request = MovementRequest.CreatePosition(targetPosition, speed <= 0 ? defaultMoveSpeed : speed, onComplete);
+        QueueOrStartMovement(obj, request);
     }
 
     public void MoveGradual(GameObject obj, Transform target, float speed = 0f, System.Action onComplete = null)
     {
         if (obj == null || target == null)
             return;
-
-        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
-        {
-            StopCoroutine(activeMovements[obj]);
-            activeMovements.Remove(obj);
-        }
-
-        Coroutine newMovement = StartCoroutine(MoveToPosition(obj, target.position, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
-        activeMovements[obj] = newMovement;
+        var request = MovementRequest.CreateTransform(target, speed <= 0 ? defaultMoveSpeed : speed, onComplete);
+        QueueOrStartMovement(obj, request);
     }
 
     public void MoveAlongPath(GameObject obj, List<Vector2Int> path, float speed = 0f, System.Action onComplete = null)
@@ -57,28 +44,52 @@ public class MovementManager : MonoBehaviour
             onComplete?.Invoke();
             return;
         }
+        var request = MovementRequest.CreatePath(path, speed <= 0 ? defaultMoveSpeed : speed, onComplete);
+        QueueOrStartMovement(obj, request);
+    }
 
+    private void QueueOrStartMovement(GameObject obj, MovementRequest request)
+    {
         if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
         {
-            StopCoroutine(activeMovements[obj]);
-            activeMovements.Remove(obj);
+            if (!queuedMovements.ContainsKey(obj))
+                queuedMovements[obj] = new Queue<MovementRequest>();
+            queuedMovements[obj].Enqueue(request);
+            return;
         }
+        StartMovementRequest(obj, request);
+    }
 
-        Coroutine newMovement = StartCoroutine(MoveAlongPathCoroutine(obj, path, speed <= 0 ? defaultMoveSpeed : speed, onComplete));
-        activeMovements[obj] = newMovement;
+    private void StartMovementRequest(GameObject obj, MovementRequest request)
+    {
+        Coroutine newMovement = null;
+        switch (request.type)
+        {
+            case MovementType.Position:
+                newMovement = StartCoroutine(MoveToPosition(obj, request.targetPosition, request.speed, request.onComplete));
+                break;
+            case MovementType.Transform:
+                newMovement = StartCoroutine(MoveToPosition(obj, request.targetTransform.position, request.speed, request.onComplete));
+                break;
+            case MovementType.Path:
+                newMovement = StartCoroutine(MoveAlongPathCoroutine(obj, request.path, request.speed, request.onComplete));
+                break;
+        }
+        if (newMovement != null)
+            activeMovements[obj] = newMovement;
     }
 
     public void MoveInstant(GameObject obj, Vector3 targetPosition)
     {
         if (obj == null)
             return;
-
         if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
         {
             StopCoroutine(activeMovements[obj]);
             activeMovements.Remove(obj);
         }
-
+        if (queuedMovements.ContainsKey(obj))
+            queuedMovements[obj].Clear();
         obj.transform.position = targetPosition;
     }
 
@@ -86,14 +97,7 @@ public class MovementManager : MonoBehaviour
     {
         if (obj == null || target == null)
             return;
-
-        if (activeMovements.ContainsKey(obj) && activeMovements[obj] != null)
-        {
-            StopCoroutine(activeMovements[obj]);
-            activeMovements.Remove(obj);
-        }
-
-        obj.transform.position = target.position;
+        MoveInstant(obj, target.position);
     }
 
     public bool HasActiveMovement(GameObject obj)
@@ -108,6 +112,23 @@ public class MovementManager : MonoBehaviour
             StopCoroutine(activeMovements[obj]);
             activeMovements.Remove(obj);
         }
+        ProcessNextQueuedMovement(obj);
+    }
+
+    private void OnMovementComplete(GameObject obj, System.Action originalCallback)
+    {
+        activeMovements.Remove(obj);
+        originalCallback?.Invoke();
+        ProcessNextQueuedMovement(obj);
+    }
+
+    private void ProcessNextQueuedMovement(GameObject obj)
+    {
+        if (queuedMovements.ContainsKey(obj) && queuedMovements[obj].Count > 0)
+        {
+            var nextRequest = queuedMovements[obj].Dequeue();
+            StartMovementRequest(obj, nextRequest);
+        }
     }
 
     private IEnumerator MoveToPosition(GameObject obj, Vector3 targetPosition, float speed, System.Action onComplete)
@@ -117,10 +138,8 @@ public class MovementManager : MonoBehaviour
             obj.transform.position = Vector3.MoveTowards(obj.transform.position, targetPosition, speed * Time.deltaTime);
             yield return null;
         }
-
         obj.transform.position = targetPosition;
-        activeMovements.Remove(obj);
-        onComplete?.Invoke();
+        OnMovementComplete(obj, onComplete);
     }
 
     private IEnumerator MoveAlongPathCoroutine(GameObject obj, List<Vector2Int> path, float speed, System.Action onComplete)
@@ -128,18 +147,14 @@ public class MovementManager : MonoBehaviour
         for (int i = 1; i < path.Count; i++)
         {
             Vector3 targetWorldPos = GridToWorldPosition(path[i]);
-
             while (Vector3.Distance(obj.transform.position, targetWorldPos) > 0.1f)
             {
                 obj.transform.position = Vector3.MoveTowards(obj.transform.position, targetWorldPos, speed * Time.deltaTime);
                 yield return null;
             }
-
             obj.transform.position = targetWorldPos;
         }
-
-        activeMovements.Remove(obj);
-        onComplete?.Invoke();
+        OnMovementComplete(obj, onComplete);
     }
 
     private Vector3 GridToWorldPosition(Vector2Int gridPos)

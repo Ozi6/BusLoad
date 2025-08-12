@@ -91,16 +91,25 @@ public class PassengerController : MonoBehaviour
         GameManager.Instance.gridManager.RemoveOccupantFromGrid(passenger.Position);
 
         bool movementComplete = false;
+        bool movementCanceled = false;
 
         if (pathToHighest.Count > 1)
         {
             MovementManager.Instance.MoveAlongPath(passenger.gameObject, pathToHighest, 0f, () => {
                 movementComplete = true;
             });
-            yield return new WaitUntil(() => movementComplete);
+
+            yield return new WaitUntil(() => movementComplete || !MovementManager.Instance.HasActiveMovement(passenger.gameObject));
+
+            if (!movementComplete)
+                movementCanceled = true;
         }
 
-        QueueManager.Instance.MovePassengerToQueuePosition(passenger);
+        if (!movementCanceled)
+            QueueManager.Instance.MovePassengerToQueuePosition(passenger);
+        else
+            QueueManager.Instance.MovePassengerToQueuePosition(passenger);
+
         passengersBeingProcessed.Remove(passenger);
     }
 
