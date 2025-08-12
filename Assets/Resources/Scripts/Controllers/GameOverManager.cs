@@ -23,7 +23,6 @@ public class GameOverManager : MonoBehaviour
     {
         if (retryButton != null)
             retryButton.onClick.AddListener(RetryLevel);
-
         if (gameOverUI != null)
             gameOverUI.SetActive(false);
     }
@@ -32,36 +31,29 @@ public class GameOverManager : MonoBehaviour
     {
         if (!QueueManager.Instance.IsQueueFull())
             return;
-
         if (HasValidPassengerForAnyBus())
             return;
-
         TriggerGameOver();
     }
 
     private bool HasValidPassengerForAnyBus()
     {
         List<Passenger> interactablePassengers = GetAllInteractablePassengers();
-
         if (interactablePassengers.Count == 0)
             return false;
-
         foreach (Passenger passenger in interactablePassengers)
             if (passenger.CanBoardBus(BusController.Instance.CurrentBus))
                 return true;
-
         return false;
     }
 
     private List<Passenger> GetAllInteractablePassengers()
     {
         List<Passenger> interactablePassengers = new List<Passenger>();
-
         foreach (var kvp in GameManager.Instance.gridObjects)
             if (kvp.Value is Passenger passenger)
                 if (IsPassengerInteractable(passenger))
                     interactablePassengers.Add(passenger);
-
         return interactablePassengers;
     }
 
@@ -69,11 +61,9 @@ public class GameOverManager : MonoBehaviour
     {
         if (!passenger.IsInteractable)
             return false;
-
         foreach (PassengerTrait trait in passenger.traits)
             if (!trait.CanMove(passenger, BusController.Instance.CurrentBus))
-                    return false;
-
+                return false;
         return true;
     }
 
@@ -81,14 +71,12 @@ public class GameOverManager : MonoBehaviour
     {
         if (gameOverUI != null)
             gameOverUI.SetActive(true);
-
         Time.timeScale = 0f;
     }
 
     private void RetryLevel()
     {
         Time.timeScale = 1f;
-
         if (gameOverUI != null)
             gameOverUI.SetActive(false);
 
@@ -103,6 +91,7 @@ public class GameOverManager : MonoBehaviour
         }
 
         QueueManager.Instance.EmptyQueue();
+        BusController.Instance.ResetBusSystem();
         GameManager.Instance.RespawnPassengers();
     }
 }

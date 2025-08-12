@@ -23,6 +23,7 @@ public class BusController : MonoBehaviour
 
     private void InitializeBuses()
     {
+        busQueue.Clear();
         foreach (BusData busData in levelData.buses)
             busQueue.Enqueue(busData);
     }
@@ -45,7 +46,6 @@ public class BusController : MonoBehaviour
     {
         if (busQueue.Count == 0)
             return;
-
         BusData data = busQueue.Dequeue();
         GameObject busObj = Instantiate(busPrefab, busSpawnPoint.position, busSpawnPoint.rotation);
         CurrentBus = busObj.GetComponent<Bus>();
@@ -58,15 +58,12 @@ public class BusController : MonoBehaviour
             {
                 BusTrait trait = (BusTrait)busObj.AddComponent(type);
                 CurrentBus.traits.Add(trait);
-
                 var config = data.traitConfigs.Find(c => c.traitType == traitType);
                 if (config != null)
                     trait.GetType().GetMethod("Configure")?.Invoke(trait, new object[] { config });
-
                 BusTraitVisualComponent visual = BusTraitVisualPool.Instance
                     .GetVisual(type, trait)
                     .GetComponent<BusTraitVisualComponent>();
-
                 visual.transform.SetParent(busObj.transform, false);
                 visual.UpdateVisual(trait);
             }
@@ -77,5 +74,20 @@ public class BusController : MonoBehaviour
             IsBusAtBoardingPoint = true;
             PassengerController.Instance.ProcessQueue();
         });
+    }
+
+    public void ResetBusSystem()
+    {
+        if (CurrentBus != null)
+        {
+            MovementManager.Instance.CancelMovement(CurrentBus.gameObject);
+            CurrentBus.ResetBoardingState();
+            Destroy(CurrentBus.gameObject);
+            CurrentBus = null;
+        }
+
+        IsBusAtBoardingPoint = false;
+        InitializeBuses();
+        SpawnNextBus();
     }
 }

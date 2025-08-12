@@ -123,14 +123,19 @@ public class QueueManager : MonoBehaviour
 
     public void EmptyQueue()
     {
+        List<Passenger> passengersToDestroy = new List<Passenger>();
         for (int i = 0; i < queuedPassengers.Length; i++)
         {
             if (queuedPassengers[i] != null)
             {
                 if (MovementManager.Instance.HasActiveMovement(queuedPassengers[i].gameObject))
                     MovementManager.Instance.CancelMovement(queuedPassengers[i].gameObject);
+                passengersToDestroy.Add(queuedPassengers[i]);
                 queuedPassengers[i] = null;
             }
         }
+        foreach (Passenger passenger in passengersToDestroy)
+            if (passenger != null)
+                Destroy(passenger.gameObject);
     }
 }
