@@ -29,42 +29,8 @@ public class GameOverManager : MonoBehaviour
 
     public void CheckGameOverConditions()
     {
-        if (!QueueManager.Instance.IsQueueFull())
-            return;
-        if (HasValidPassengerForAnyBus())
-            return;
-        TriggerGameOver();
-    }
-
-    private bool HasValidPassengerForAnyBus()
-    {
-        List<Passenger> interactablePassengers = GetAllInteractablePassengers();
-        if (interactablePassengers.Count == 0)
-            return false;
-        foreach (Passenger passenger in interactablePassengers)
-            if (passenger.CanBoardBus(BusController.Instance.CurrentBus))
-                return true;
-        return false;
-    }
-
-    private List<Passenger> GetAllInteractablePassengers()
-    {
-        List<Passenger> interactablePassengers = new List<Passenger>();
-        foreach (var kvp in GameManager.Instance.gridObjects)
-            if (kvp.Value is Passenger passenger)
-                if (IsPassengerInteractable(passenger))
-                    interactablePassengers.Add(passenger);
-        return interactablePassengers;
-    }
-
-    private bool IsPassengerInteractable(Passenger passenger)
-    {
-        if (!passenger.IsInteractable)
-            return false;
-        foreach (PassengerTrait trait in passenger.traits)
-            if (!trait.CanMove(passenger, BusController.Instance.CurrentBus))
-                return false;
-        return true;
+        if (QueueManager.Instance.IsQueueFull())
+            TriggerGameOver();
     }
 
     public void TriggerGameOver()
@@ -79,7 +45,6 @@ public class GameOverManager : MonoBehaviour
         Time.timeScale = 1f;
         if (gameOverUI != null)
             gameOverUI.SetActive(false);
-
         List<GameObject> movingObjects = MovementManager.Instance.GetAllMovingObjects();
         foreach (GameObject obj in movingObjects)
         {
@@ -89,7 +54,6 @@ public class GameOverManager : MonoBehaviour
                 Destroy(obj);
             }
         }
-
         QueueManager.Instance.EmptyQueue();
         BusController.Instance.ResetBusSystem();
         GameManager.Instance.RespawnPassengers();
