@@ -63,7 +63,7 @@ public class TunnelManager : MonoBehaviour
     {
         foreach (TunnelData data in tunnelData)
         {
-            if (data.gridPosition.x < 0 || data.gridPosition.x >= 12 || // GRID_SIZE
+            if (data.gridPosition.x < 0 || data.gridPosition.x >= 12 ||
                 data.gridPosition.y < 0 || data.gridPosition.y >= 12)
                 continue;
 
